@@ -1,0 +1,238 @@
+{% extends "base/layout.html" %}
+
+<!-- TITLE -->
+{% block title %} {% endblock title %}
+
+<!-- CONTENT -->
+{% block content %}
+<div class="min-h-screen flex">
+  <div class="hidden lg:block relative w-0 flex-1">
+    <img
+      class="absolute inset-0 h-full w-full object-cover"
+      src="https://images.unsplash.com/photo-1505904267569-f02eaeb45a4c?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=1908&amp;q=80"
+      alt=""
+    />
+  </div>
+  <div
+    class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24"
+  >
+    <div class="mx-auto w-full max-w-sm lg:w-96">
+      <div>
+        <img
+          class="h-12 w-auto"
+          src="https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg"
+          alt="Workflow"
+        />
+        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
+          Register account
+        </h2>
+      </div>
+
+      <div class="mt-8">
+        <div class="mt-6">
+          <form class="space-y-6" id="register-form">
+            <div>
+              <label
+                for="email"
+                class="block text-sm font-medium text-gray-700"
+              >
+                Email address
+              </label>
+              <div class="mt-1">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              <p
+                id="email-error"
+                class="text-danger text-sm text-left opacity-90"
+              ></p>
+            </div>
+
+            <div>
+              <label
+                for="username"
+                class="block text-sm font-medium text-gray-700"
+              >
+                Username
+              </label>
+              <div class="mt-1">
+                <input
+                  id="username"
+                  name="username"
+                  type="username"
+                  autocomplete="username"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                <p
+                  id="username-error"
+                  class="text-danger text-sm text-left opacity-90"
+                ></p>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <div class="mt-1">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                <p
+                  id="password-error"
+                  class="text-danger text-sm text-left opacity-90"
+                ></p>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700"
+              >
+                Confirm Password
+              </label>
+              <div class="mt-1">
+                <input
+                  id="password"
+                  name="confirm_password"
+                  type="password"
+                  autocomplete="current-password"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                <p
+                  id="confirm-password-error"
+                  class="text-danger text-sm text-left opacity-90"
+                ></p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <div class="text-sm">
+                <a
+                  href="{{ url_for('login') }}"
+                  class="font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  Already have an account?
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Register
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+<!-- SCRIPTS -->
+{% block script %}
+<script>
+  // Add event listener to the form submission
+  document
+    .getElementById('register-form')
+    .addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevent the default form submission
+
+      // Get the form data
+      const formData = new FormData(event.target);
+
+      // Define the API URL for the login endpoint
+      const apiUrl = "{{ url_for('chat_app_api.register') }}";
+
+      // Create an object to map error types to HTML elements
+      const errorElementMap = {
+        email: document.getElementById('email-error'),
+        username: document.getElementById('username-error'),
+        password: document.getElementById('password-error'),
+        'confirm-password': document.getElementById('confirm-password-error'),
+      };
+
+      // Make a POST request to the login API
+      fetch(apiUrl, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include', // Include credentials (cookies) in the request
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            // Clear all error messages if the response is successful
+            Object.values(errorElementMap).forEach((errorElement) => {
+              errorElement.classList.remove('mt-2');
+              errorElement.innerText = '';
+            });
+            sessionStorage.setItem('message', 'Account successfully created');
+            window.location.href = "{{ url_for('login') }}";
+          }
+          return response.json(); // Parse the JSON response
+        })
+        .then((data) => {
+          console.log(data);
+          if (data.errors) {
+            // Clear error errorss for types that no longer exist in the response
+            Object.keys(errorElementMap).forEach((type) => {
+              if (!data.errors.some((error) => error.type === type)) {
+                const errorElement = errorElementMap[type];
+                if (errorElement) {
+                  errorElement.classList.remove('mt-2');
+                  errorElement.innerText = '';
+                }
+              }
+            });
+
+            data.errors.forEach((error) => {
+              const errorElement = errorElementMap[error.type];
+              if (errorElement) {
+                errorElement.classList.add('mt-2');
+                errorElement.innerText = error.message;
+              }
+
+              // Check if there is only one error of type 'password-not-match'
+              if (
+                data.errors.length === 1 &&
+                data.errors[0].type === 'password-not-match'
+              ) {
+                // Display the 'password-not-match' error using notyf.error
+                notyf.error(data.errors[0].message);
+              }
+            });
+          } else {
+            // Clear all error messages if there are no message in the response
+            Object.values(errorElementMap).forEach((errorElement) => {
+              errorElement.classList.remove('mt-2');
+              errorElement.innerText = '';
+            });
+
+            // Registration was successful, proceed with other actions
+            console.log(data.errors);
+          }
+        })
+        .catch((error) => {
+          // Handle other message
+          // const messageContainer = document.getElementById('message-container');
+          // messageContainer.innerHTML = `<div class="text-red-500">Login failed: ${error.message}</div>`;
+        });
+    });
+</script>
+{% endblock script %}

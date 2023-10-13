@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %} {% endblock title %}</title>
+  </head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-1': '#0A0E0F', // Main Backgroud of chat
+            'dark-2': '#171B1D', // Background of sidebar
+            'dark-3': '#202426', // Search
+            'dark-4': '#252B2E', // Chat
+            'light-1': '#FFFFFF', // Text white
+            'light-2': '#697C89', // Sub descriotion/chat
+            'light-3': '#5C5C7B', // Icons?
+            primary: '#48A6C3',
+            danger: '#ef4444',
+            active: '#252B2E',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
+  />
+
+  <style>
+    /* Customize the scrollbar track */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    /* Customize the scrollbar thumb */
+    ::-webkit-scrollbar-thumb {
+      background-color: #6366f1;
+      border-radius: 6px;
+    }
+
+    /* Customize the scrollbar track */
+    ::-webkit-scrollbar-track {
+      background-color: #171b1d;
+      border-radius: 6px;
+    }
+
+    /* Add this CSS to your stylesheet or in a <style> tag in your HTML document */
+    .message-bottom {
+      /* Set a fixed height to the chat messages container */
+      height: 100vh; /* Adjust the height as needed */
+      overflow: hidden; /* Hide the scrollbar */
+    }
+
+    .message-bottom::-webkit-scrollbar-thumb {
+      background-color: transparent; /* Hide the scrollbar thumb */
+    }
+
+    /* html,
+body {
+ max-width: 100%;
+ overflow-x: hidden;
+} */
+
+    .notyf {
+      margin-top: 20px;
+    }
+  </style>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+  />
+
+  <body class="font-sans">
+    <!-- CONTENT -->
+    {% block content %} {% endblock content %}
+
+    <!-- NOTYF -->
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script>
+      const notyf = new Notyf({
+        duration: 5000,
+        position: {
+          x: 'right',
+          y: 'top',
+        },
+        types: [
+          {
+            type: 'success',
+            background: '#5EEE82', // Custom background color for success notifications (e.g., green)
+            duration: 5000,
+            dismissible: true,
+          },
+          {
+            type: 'error',
+            background: '#ef233c', // Custom background color for error notifications (e.g., orange)
+            duration: 5000,
+            dismissible: true,
+          },
+        ],
+      });
+    </script>
+
+    <!-- SCRIPTS -->
+    {% block script %} {% endblock script %}
+  </body>
+</html>

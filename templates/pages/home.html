@@ -1,0 +1,548 @@
+{% extends "base/layout.html" %}
+
+<!-- TITLE -->
+{% block title %} {% endblock title %}
+
+<!-- CONTENT -->
+{% block content %}
+<div class="flex h-screen overflow-hidden">
+  <!-- Sidebar -->
+  <div class="w-1/4 bg-white border-r border-gray-700">
+    <!-- Sidebar Header -->
+    <header
+      class="p-6 h-20 border-b border-gray-700 flex justify-between items-center bg-dark-2 text-white"
+    >
+      <div class="relative">
+        <!-- <button
+          class="flex items-center justify-center w-8 h-8 p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:bg-gray-300 transition duration-300"
+        ></button> -->
+        <button
+          id="menuButton"
+          class="focus:outline-none flex items-center justify-center w-8 h-8 p-2 rounded-md focus:outline-none transition duration-300"
+        >
+          <span class="sr-only">Open menu</span>
+          <svg
+            class="w-4 h-4 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          </svg>
+        </button>
+        <!-- Menu Dropdown -->
+        <div
+          id="menuDropdown"
+          class="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg hidden"
+        >
+          <ul class="py-2 px-3">
+            <li>
+              <a
+                href="#"
+                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
+                >Profile</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
+                >Account Settings</a
+              >
+            </li>
+            <li>
+              <a
+                href="{{ url_for('logout') }}"
+                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
+                >Logout</a
+              >
+            </li>
+            <!-- Add more menu options here -->
+          </ul>
+        </div>
+      </div>
+      <div class="flex items-center justify-center">
+        <input
+          type="text"
+          class="px-4 py-1 bg-dark-3 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Search..."
+        />
+        <button
+          class="ml-2 px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Search
+        </button>
+      </div>
+    </header>
+
+    <!-- Contact List -->
+    <div class="overflow-y-auto h-screen mb-9 pb-20 bg-dark-2">
+      <div
+        class="flex items-center cursor-pointer hover:bg-dark-3 p-4 bg-active"
+      >
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Alice</h2>
+          <p class="text-light-2 text-sm line-clamp-1">Hoorayy!!</p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/ad922e/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Martin</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            That pizza place was amazing! We should go again sometime. 🍕
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/2e83ad/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Charlie</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Hey, do you have any recommendations for a good movie to watch?
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/c2ebff/0f0b14.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">David</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            I just finished reading a great book! It was so captivating.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/e7c2ff/7315d1.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Ella</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            What's the plan for this weekend? Anything fun?
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/ffc2e2/ffdbdb.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Fiona</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            I heard there's a new exhibit at the art museum. Interested?
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/f83f3f/4f4f4f.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">George</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            I tried that new cafe downtown. The coffee was fantastic!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/dddddd/999999.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Hannah</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            I'm planning a hiking trip next month. Want to join?
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/70ff33/501616.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Ian</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Let's catch up soon. It's been too long!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Jack</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Remember that hilarious joke you told me? I can't stop laughing!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Jack</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Remember that hilarious joke you told me? I can't stop laughing!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">HELLO</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Remember that hilarious joke you told me? I can't stop laughing!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Chat Area -->
+  <div class="flex-1">
+    <!-- Chat Header -->
+    <header class="bg-dark-2 p-6 text-gray-700 h-20">
+      <h1 class="text-white text-2xl font-semibold">Alice</h1>
+    </header>
+
+    <!-- Chat Messages -->
+    <div class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom">
+      <!-- Incoming Message -->
+      <div class="flex mb-4 cursor-pointer">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center mr-2">
+          <img
+            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+        <div class="flex max-w-96 bg-dark-4 rounded-lg p-3 gap-3">
+          <p class="text-light-1">Hey Bob, how's it going?</p>
+        </div>
+      </div>
+
+      <!-- Outgoing Message -->
+      <div class="flex justify-end mb-4 cursor-pointer">
+        <div
+          class="flex max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3"
+        >
+          <p>Hi Alice! I'm good, just finished a great book. How about you?</p>
+        </div>
+        <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
+          <img
+            src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="My Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+      </div>
+
+      <!-- Incoming Message -->
+      <div class="flex mb-4 cursor-pointer">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center mr-2">
+          <img
+            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+        <div class="flex max-w-96 bg-dark-4 rounded-lg p-3 gap-3">
+          <p class="text-light-1">
+            That book sounds interesting! What's it about?
+          </p>
+        </div>
+      </div>
+
+      <!-- Outgoing Message -->
+      <div class="flex justify-end mb-4 cursor-pointer">
+        <div
+          class="flex max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3"
+        >
+          <p>
+            It's about an astronaut stranded on Mars, trying to survive.
+            Gripping stuff!
+          </p>
+        </div>
+        <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
+          <img
+            src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="My Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+      </div>
+
+      <!-- Incoming Message -->
+      <div class="flex mb-4 cursor-pointer">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center mr-2">
+          <img
+            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+        <div class="flex max-w-96 bg-dark-4 rounded-lg p-3 gap-3">
+          <p class="text-light-1">
+            I'm intrigued! Maybe I'll borrow it from you when you're done?
+          </p>
+        </div>
+      </div>
+
+      <!-- Outgoing Message -->
+      <div class="flex justify-end mb-4 cursor-pointer">
+        <div
+          class="flex max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3"
+        >
+          <p>Of course! I'll drop it off at your place tomorrow.</p>
+        </div>
+        <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
+          <img
+            src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="My Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+      </div>
+
+      <!-- Incoming Message -->
+      <div class="flex mb-4 cursor-pointer">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center mr-2">
+          <img
+            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+        <div class="flex max-w-96 bg-dark-4 rounded-lg p-3 gap-3">
+          <p class="text-light-1">Thanks, you're the best!</p>
+        </div>
+      </div>
+
+      <!-- Outgoing Message -->
+      <div class="flex justify-end mb-4 cursor-pointer">
+        <div
+          class="flex max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3"
+        >
+          <p>Anytime! Let me know how you like it. 😊</p>
+        </div>
+        <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
+          <img
+            src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="My Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+      </div>
+
+      <!-- Incoming Message -->
+      <div class="flex mb-4 cursor-pointer">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center mr-2">
+          <img
+            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+        <div class="flex max-w-96 bg-dark-4 rounded-lg p-3 gap-3">
+          <p class="text-light-1">So, pizza next week, right?</p>
+        </div>
+      </div>
+
+      <!-- Outgoing Message -->
+      <div class="flex items-end justify-end mb-4 cursor-pointer">
+        <div class="flex flex-col gap-2">
+          <div
+            class="flex max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3"
+          >
+            <p>Absolutely! Can't wait for our pizza date. 🍕</p>
+          </div>
+          <div
+            class="flex max-w-96 bg-indigo-500 text-white rounded-lg p-3 gap-3"
+          >
+            <p>Absolutely! Can't wait for our pizza date. 🍕</p>
+          </div>
+        </div>
+        <div class="w-9 h-9 rounded-full flex items-center justify-center ml-2">
+          <img
+            src="https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="My Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+      </div>
+      <!-- Incoming Message -->
+      <div class="flex items-end mb-4 cursor-pointer">
+        <div
+          class="w-9 h-9 rounded-full flex items-center justify-center mr-2 mb-1"
+        >
+          <img
+            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-8 h-8 rounded-full"
+          />
+        </div>
+        <div class="flex flex-col gap-2">
+          <div class="flex max-w-96 bg-dark-4 rounded-lg p-3 gap-3">
+            <p class="text-light-1">
+              That book sounds interesting! What's it about?
+            </p>
+          </div>
+          <div class="flex max-w-96 bg-dark-4 rounded-lg p-3 gap-3">
+            <p class="text-light-1">
+              That book sounds interesting! What's it about?
+            </p>
+          </div>
+          <div class="flex max-w-96 bg-dark-4 rounded-lg p-3 gap-3">
+            <p class="text-light-1">
+              That book sounds interesting! What's it about?
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input -->
+    <footer
+      class="bg-dark-3 border-t border-gray-700 p-4 absolute bottom-0 w-3/4"
+    >
+      <div class="flex items-center">
+        <input
+          type="text"
+          placeholder="Type a message..."
+          class="w-full p-2 text-light-1 bg-dark-4 rounded-md border border-gray-800 focus:outline-none focus:border-blue-500"
+        />
+        <button class="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2">
+          Send
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>
+{% endblock content %}
+
+<!-- SCRIPTS -->
+{% block script %}
+<!-- Add this script at the end of your HTML, just before the closing </body> tag -->
+<script>
+  // Get the chat messages container
+  const chatMessages = document.querySelector('.message-bottom');
+
+  // Scroll to the end of the chat messages
+  function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Call the function to initially scroll to the bottom
+  scrollToBottom();
+
+  // You can call scrollToBottom() whenever you want to scroll to the bottom, for example, after adding a new message.
+  // Example:
+  // scrollToBottom();
+
+  // If you want to scroll to the bottom automatically when a new message is added, you can call scrollToBottom() after adding a new message to the chat.
+</script>
+
+<script>
+  // JavaScript for showing/hiding the menu
+  const menuButton = document.getElementById('menuButton');
+  const menuDropdown = document.getElementById('menuDropdown');
+
+  menuButton.addEventListener('click', () => {
+    if (menuDropdown.classList.contains('hidden')) {
+      menuDropdown.classList.remove('hidden');
+    } else {
+      menuDropdown.classList.add('hidden');
+    }
+  });
+
+  // Close the menu if you click outside of it
+  document.addEventListener('click', (e) => {
+    if (!menuDropdown.contains(e.target) && !menuButton.contains(e.target)) {
+      menuDropdown.classList.add('hidden');
+    }
+  });
+</script>
+{% endblock script %}
