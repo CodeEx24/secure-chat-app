@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RSA Encryption and Decryption</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
+  </head>
+  <body>
+    <h1>RSA Encryption and Decryption</h1>
+
+    <label for="message">Message:</label>
+    <input type="text" id="message" placeholder="Enter your message" />
+    <br />
+    <button onclick="encryptMessage()">Encrypt</button>
+    <button onclick="decryptMessage()">Decrypt</button>
+
+    <h2>Results:</h2>
+    <p>Encrypted Message: <span id="encryptedMessage"></span></p>
+    <p>Decrypted Message: <span id="decryptedMessage"></span></p>
+    <p>Decrypted Message 2: <span id="decryptedMessage2"></span></p>
+
+    <label for="customPrivateKey">Custom Private Key:</label>
+    <textarea
+      id="customPrivateKey"
+      placeholder="Paste a custom private key"
+    ></textarea>
+    <button onclick="decryptWithCustomKey()">Decrypt with Custom Key</button>
+
+    <script>
+      // Fetch the keys from the server
+      let publicKeyStr;
+      let privateKeyStr;
+
+      let publicKey;
+      let privateKey;
+      const apiUrl = "{{ url_for('chat_app_api.getRSA') }}";
+      fetch(apiUrl)
+        .then((response) => response.json())
+        .then((data) => {
+          publicKeyStr = data.publicKey;
+          privateKeyStr = data.privateKey;
+          console.log('privateKeyStr: ', privateKeyStr);
+
+          publicKey = forge.pki.publicKeyFromPem(publicKeyStr);
+          privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
+        })
+        .catch((error) => console.error('Error fetching keys:', error));
+
+      function encryptMessage() {
+        const message = document.getElementById('message').value;
+        const encryptedMessage = publicKey.encrypt(
+          forge.util.encodeUtf8(message)
+        );
+        const base64EncryptedMessage = forge.util.encode64(encryptedMessage);
+        document.getElementById('encryptedMessage').textContent =
+          base64EncryptedMessage;
+      }
+
+      function decryptMessage() {
+        const base64EncryptedMessage =
+          document.getElementById('encryptedMessage').textContent;
+        const encryptedMessage = forge.util.decode64(base64EncryptedMessage);
+
+        try {
+          const decryptedMessage = privateKey.decrypt(encryptedMessage);
+          document.getElementById('decryptedMessage').textContent =
+            forge.util.decodeUtf8(decryptedMessage);
+        } catch (error) {
+          document.getElementById('decryptedMessage').textContent =
+            'Decryption failed. The private key does not match the public key.';
+        }
+      }
+
+      function decryptWithCustomKey() {
+        const base64EncryptedMessage =
+          document.getElementById('encryptedMessage').textContent;
+        const encryptedMessage = forge.util.decode64(base64EncryptedMessage);
+        const customPrivateKeyStr =
+          document.getElementById('customPrivateKey').value;
+
+        try {
+          const customPrivateKey =
+            forge.pki.privateKeyFromPem(customPrivateKeyStr);
+          const decryptedMessage = customPrivateKey.decrypt(encryptedMessage);
+          document.getElementById('decryptedMessage2').textContent =
+            forge.util.decodeUtf8(decryptedMessage);
+        } catch (error) {
+          document.getElementById('decryptedMessage2').textContent =
+            'Decryption failed with the custom private key.';
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -43,7 +43,6 @@
                   id="email"
                   name="email"
                   type="email"
-                  autocomplete="email"
                   class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
@@ -106,7 +105,7 @@
               </label>
               <div class="mt-1">
                 <input
-                  id="password"
+                  id="confirm-password"
                   name="confirm_password"
                   type="password"
                   autocomplete="current-password"
@@ -114,6 +113,49 @@
                 />
                 <p
                   id="confirm-password-error"
+                  class="text-danger text-sm text-left opacity-90"
+                ></p>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <label
+                for="question"
+                class="block text-sm font-medium text-gray-700"
+              >
+                Security Questions
+              </label>
+              <div class="mt-1">
+                <select
+                  id="question"
+                  name="question"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                ></select>
+
+                <p
+                  id="question-error"
+                  class="text-danger text-sm text-left opacity-90"
+                ></p>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700"
+              >
+                Answer
+              </label>
+              <div class="mt-1">
+                <input
+                  id="answer"
+                  name="answer"
+                  type="text"
+                  class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+
+                <p
+                  id="answer-error"
                   class="text-danger text-sm text-left opacity-90"
                 ></p>
               </div>
@@ -149,6 +191,43 @@
 <!-- SCRIPTS -->
 {% block script %}
 <script>
+  async function fetchQuestion() {
+    const questionApiUrl =
+      "{{ url_for('chat_app_api.fetchSecurityQuestions') }}";
+
+    try {
+      const response = await fetch(questionApiUrl);
+      const data = await response.json();
+
+      const selectElement = document.getElementById('question');
+
+      // Create a default disabled option
+      const defaultOption = document.createElement('option');
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      defaultOption.text = 'Please select a security question';
+      defaultOption.classList.add('light-text-1');
+      selectElement.appendChild(defaultOption);
+
+      // Loop through the data and create options for the dropdown
+      data.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.id; // You can set the value to something meaningful if needed
+        option.text = item.question;
+        option.id = `option_${item.id}`; // Set the id based on data.id
+        selectElement.appendChild(option);
+      });
+
+      console.log('Dropdown options populated.');
+    } catch (error) {
+      console.error('Error fetching data: ', error);
+    }
+  }
+
+  fetchQuestion();
+</script>
+
+<script>
   // Add event listener to the form submission
   document
     .getElementById('register-form')
@@ -166,6 +245,8 @@
         email: document.getElementById('email-error'),
         username: document.getElementById('username-error'),
         password: document.getElementById('password-error'),
+        question: document.getElementById('question-error'),
+        answer: document.getElementById('answer-error'),
         'confirm-password': document.getElementById('confirm-password-error'),
       };
 

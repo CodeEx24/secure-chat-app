@@ -1,6 +1,8 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
-from models import db, User
+from cryptography.fernet import Fernet
+
+from models import db, User, Messages, ChattedUser, SecurityQuestion
 from werkzeug.security import generate_password_hash  
 import secrets
 from datetime import datetime, timedelta
@@ -14,7 +16,16 @@ def generate_key_pair():
     key = RSA.generate(2048)  # Adjust key size as needed
     private_key = key.export_key()
     public_key = key.publickey().export_key()
+    
+    print("private_key: ", private_key)
+    print("public_key: ", public_key)
     return private_key, public_key
+
+# Function to encrypt a private key using Fernet
+def encrypt_private_key(private_key, encryption_key):
+    cipher_suite = Fernet(encryption_key)
+    encrypted_private_key = cipher_suite.encrypt(private_key)
+    return encrypted_private_key
 
 # Encrypt a message using the recipient's public key
 def encrypt_message(message, recipient_public_key):
@@ -49,6 +60,7 @@ def loginUser( username, password):
     if user and check_password_hash(user.password, password):
         # Successfully authenticated
         session['user_id'] = user.id
+        session['user_name'] = user.username
         session['is_logged_in'] = True
         return "Successfully login", 200
     else:
@@ -58,10 +70,21 @@ def loginUser( username, password):
     if error_messages:
         return error_messages, 400
 
-def registerUser(email, username, password, confirm_password):
+def registerUser(email, username, password, confirm_password,  answer, question=None):
+
     # Initialize an empty list to store error messages
     error_messages = []
 
+    print("security_question: ", question)
+    print("answer: ", answer)
+    # Check if question has a value if not throw an error with type of question
+    if not question:
+        error_messages.append({"message": "Security Question is required", "type": "question"})
+        
+    if not answer:
+        error_messages.append({"message": "Answer is required", "type": "answer"})
+        
+    
     # Define a regular expression pattern for password validation
     # This pattern requires at least one uppercase letter, one lowercase letter, and one digit (number).
     password_pattern = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$')
@@ -114,18 +137,34 @@ def registerUser(email, username, password, confirm_password):
         return error_messages, 400
 
     private_key, public_key = generate_key_pair()
+        # Convert the PEM-encoded keys to strings
+        
+    private_key_str = private_key.decode('utf-8')
+    public_key_str = public_key.decode('utf-8')
+    
+    print("private_key_str: ", private_key_str)
+    print("public_key_str: ", public_key_str)
+    
+    print("private_key: ", private_key)
+    print("public_key: ", public_key)
+    # encrypted_private_key= encrypt_private_key(private_key)
     hashed_password = generate_password_hash(password)
-
+    hashed_answer = generate_password_hash(answer)
+    
+ 
+    
    # If no errors, proceed with user registration
-    new_user = User(email=email, username=username, password=hashed_password, public_key= public_key, private_key=private_key )
+    new_user = User(email=email, username=username, password=hashed_password, public_key= public_key_str, private_key=private_key )
+    new_security_question = SecurityQuestion(user_id=new_user.id, question_id=question, answer=hashed_answer)
 
     # Save the user to the database
     db.session.add(new_user)
+    db.session.add(new_security_question)
     db.session.commit()
     
     # ... the rest of your registration code ...
   
-    return "Account successfully created", 200
+    return "Account successfully created", 400
 
 
 def sendResetPasswordEmail(email):
@@ -196,3 +235,46 @@ def resetPassword(token, new_password, confirm_password):
         else:
             return 'Invalid or expired token', 400
     
+    
+def getUsernameList(username, query_username):
+    if query_username:
+        # Filter the users, excluding the current user's username
+        users_query = User.query.filter(
+            User.username.ilike(f'%{query_username}%'),
+            User.username != username
+        ).limit(10)
+
+        # Execute the query to fetch the results
+        users = users_query.all()
+
+        if users: 
+            print("EXISTING USER: ")
+            # For loop the users and return the user as an object 
+            users_list = [{"id": user.id, "username": user.username} for user in users]
+            return users_list, 200
+        else:
+            print("NO USER: ")
+            return "No users found", 400
+    else:
+        print("PLEASE TYPE: ")
+        # Return "Please type to search"
+        return "Please type to search", 400
+
+
+def retrieve_chat_history(sender_id, recipient_id):
+
+    # The current user chatting with for example username 3
+    userSendMessages = db.session.query(
+                ChattedUser).filter(ChattedUser.sender_id == sender_id, ChattedUser.recipient_id == recipient_id).all()
+    userRecieveMessages = db.session.query(
+                ChattedUser).filter(ChattedUser.sender_id == recipient_id, ChattedUser.recipient_id == sender_id).all()
+    
+    if userSendMessages and userRecieveMessages:
+        print("userSendMessages: ", userSendMessages)
+        print("userRecieveMessages: ", userRecieveMessages)
+    #     sendChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userSendMessages.id)
+    #     recieveChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userRecieveMessages.id)
+        
+        
+    # else:
+    #     print("NO CHAT HISTORY WITH USER")

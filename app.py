@@ -10,7 +10,8 @@ from models import init_db
 
 from decorators.auth_decorators import preventAuthenticated, userRequired
 from datetime import  timedelta
-from mail import mail  # Import mail from the mail.py module
+from extensions import mail  # Import mail from the mail.py module
+from events import socketio
 from flask_socketio import SocketIO
 
 from Api.v1.api_routes import chat_app_api
@@ -19,7 +20,7 @@ from Api.v1.api_routes import chat_app_api
 def create_app():
     load_dotenv()  # Load environment variables from .env file
     app = Flask(__name__) # Initialize the application 
-    socketio = SocketIO(app) # Initialize Flask-SocketIO
+    
     # socketio = SocketIO(app, cors_allowed_origins=allowed_origins) # Initialize Flask-SocketIO
 
     # cache.init_app(app)
@@ -43,7 +44,8 @@ def create_app():
 
     # app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
     mail.init_app(app)
-
+    socketio.init_app(app)
+    
     chat_api_base_url = os.getenv("CHAT_API_BASE_URL")
 
     
@@ -87,9 +89,22 @@ def create_app():
     @userRequired
     def home():
         return render_template('pages/home.html')
-
-
     
+    @app.route('/practice')
+    @userRequired
+    def practice():
+        return render_template('pages/practice.html')
+        
+        
+    # Define the chat route
+    @app.route('/chat/<int:id>')
+    def chat(id):
+        # Your chat logic goes here
+       
+        return render_template('pages/chat.html', id=id)
+
+    if __name__ == '__main__':
+        app.run(debug=True)
 
 
 

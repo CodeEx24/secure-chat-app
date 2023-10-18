@@ -291,17 +291,17 @@
   <!-- Main Chat Area -->
   <div class="flex-1">
     <!-- Chat Header -->
-    <header class="bg-dark-2 p-6 text-gray-700 h-20 text-light-1">
-      HEADER HERE
+    <header
+      class="bg-dark-2 p-6 text-gray-700 text-xl font-bold h-20 text-light-1"
+    >
+      USERNAME {{id}}
     </header>
 
     <!-- Chat Messages CHART CONTAINER-->
     <div
       id="chat-container"
       class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom"
-    >
-      <p class="text-light-1">THIS IS CHART CONTAINER</p>
-    </div>
+    ></div>
 
     <!-- Chat Input -->
     <footer
@@ -310,7 +310,7 @@
       <div class="flex items-center">
         <input
           type="text"
-          id="message"
+          id="message-input"
           placeholder="Type a message..."
           class="w-full p-2 text-light-1 bg-dark-4 rounded-md border border-gray-800 focus:outline-none focus:border-blue-500"
         />
@@ -342,6 +342,7 @@
 </script>
 
 <!-- Menu button dropdown (Header) -->
+
 <script>
   // JavaScript for showing/hiding the menu
   const menuButton = document.getElementById('menuButton');
@@ -361,12 +362,6 @@
       menuDropdown.classList.add('hidden');
     }
   });
-</script>
-
-<!-- Variables -->
-<script>
-  const currentChatId = 0;
-  const currentPublicKey = '';
 </script>
 
 <!-- SEARCH FUNCTIONS FETCH -->
@@ -478,33 +473,237 @@
   });
 </script>
 
+<script>
+  // Listen for Enter key press in the message input
+  document
+    .getElementById('message-input')
+    .addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        sendMessage(); // Trigger the send button's click event
+      }
+    });
+</script>
+
+<!-- Fetch Current User -->
+<script></script>
+
+<!-- ENCRTYPTED PACKAGE -->
+<script src="https://unpkg.com/openpgp@4.10.10/dist/openpgp.min.js"></script>
+
+<!-- ENCRYPTION AND DECRYPTION -->
+<script>
+  async function encryptMessage(message, recipientPublicKey) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(message);
+
+    const recipientPublicKeyBuffer = await crypto.subtle.importKey(
+      'spki',
+      recipientPublicKey,
+      {
+        name: 'RSA-OAEP',
+        hash: 'SHA-256',
+      },
+      false,
+      ['encrypt']
+    );
+
+    const encryptedBuffer = await crypto.subtle.encrypt(
+      {
+        name: 'RSA-OAEP',
+      },
+      recipientPublicKeyBuffer,
+      data
+    );
+
+    const encryptedMessage = new Uint8Array(encryptedBuffer);
+    return encryptedMessage;
+  }
+</script>
+
+<script>
+  async function decryptMessage(encryptedMessage, privateKey) {
+    const privateKeyBuffer = await crypto.subtle.importKey(
+      'pkcs8',
+      privateKey,
+      {
+        name: 'RSA-OAEP',
+        hash: 'SHA-256',
+      },
+      false,
+      ['decrypt']
+    );
+
+    const decryptedBuffer = await crypto.subtle.decrypt(
+      {
+        name: 'RSA-OAEP',
+      },
+      privateKeyBuffer,
+      encryptedMessage
+    );
+
+    const decoder = new TextDecoder();
+    const decryptedMessage = decoder.decode(decryptedBuffer);
+    return decryptedMessage;
+  }
+</script>
+
 <!-- SOCKETIO -->
 <script>
-  const socket = io();
-
-  // I want to get the connect data here
-  socket.on('connect', () => {
-    console.log('connected');
-  });
-
-  const chatContainer = document.getElementById('chat-container');
   // Get the last ellement in my url
   const url = window.location.href;
   const urlArray = url.split('/');
-  const receiver_username = urlArray[urlArray.length - 1];
+  const userReceiverId = urlArray[urlArray.length - 1];
 
+  const socket = io.connect('http://' + document.domain + ':' + location.port, {
+    query: {
+      chat_user_id: userReceiverId, // User B's ID or username
+    },
+  });
+</script>
+
+<!-- Send Message Function -->
+<script>
   function sendMessage() {
-    // Get the message value and chat container
-    const message = document.getElementById('message').value;
-    console.log('message: ', message);
-    console.log('reciever_username: ', receiver_username);
-    // Send the message and reciever username
-    socket.emit('send_message', {
-      message: message,
-      receiver_username: receiver_username,
+    const messageInput = document.getElementById('message-input');
+    const message = messageInput.value;
+    if (message) {
+      socket.emit('send_message', {
+        message: message,
+      });
+      messageInput.value = '';
+    }
+  }
+</script>
+
+<!-- Chat History -->
+<script>
+  socket.on('chat_history', (chatHistory) => {
+    const chatContainer = document.getElementById('chat-container');
+    chatContainer.innerHTML = ''; // Clear existing chat history
+    chatHistory.forEach((message) => {
+      const messageItem = document.createElement('li');
+      messageItem.innerHTML = `${message.sender} (${message.timestamp}): ${message.message}`;
+      chatContainer.appendChild(messageItem);
     });
+  });
+
+  socket.on('message', function (data) {
+    console.log('DATA SENDER: ', data);
+    console.log('RECEIVER: ', userReceiverId);
+    const chatContainer = document.getElementById('chat-container');
+
+    if (data.sender == userReceiverId) {
+      // Handle incoming messages from the recipient
+      console.log('TRUE');
+      const incomingMessageContainer = createIncomingMessageContainer(
+        data.message
+      );
+      chatContainer.appendChild(incomingMessageContainer);
+    } else {
+      console.log('ELSE');
+      // Handle outgoing messages from the current user
+      const outgoingMessageContainer = createOutgoingMessageContainer(
+        data.message
+      );
+      chatContainer.appendChild(outgoingMessageContainer);
+    }
+  });
+
+  // Function to create an outgoing message container
+  function createOutgoingMessageContainer(messageText) {
+    const messageContainer = document.createElement('div');
+    messageContainer.classList.add(
+      'flex',
+      'justify-end',
+      'mb-4',
+      'cursor-pointer'
+    );
+
+    const messageContent = document.createElement('div');
+    messageContent.classList.add(
+      'flex',
+      'max-w-96',
+      'bg-indigo-500',
+      'text-white',
+      'rounded-lg',
+      'p-3',
+      'gap-3'
+    );
+
+    const messageTextElement = document.createElement('p');
+    messageTextElement.innerText = messageText;
+
+    messageContent.appendChild(messageTextElement);
+
+    const avatarContainer = document.createElement('div');
+    avatarContainer.classList.add(
+      'w-9',
+      'h-9',
+      'rounded-full',
+      'flex',
+      'items-center',
+      'justify-center',
+      'ml-2'
+    );
+
+    const avatarImage = document.createElement('img');
+    avatarImage.src =
+      'https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+    avatarImage.alt = 'Avatar';
+    avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+
+    avatarContainer.appendChild(avatarImage);
+
+    messageContainer.appendChild(messageContent);
+    messageContainer.appendChild(avatarContainer);
+
+    return messageContainer;
   }
 
-  //
+  // Function to create an incoming message container
+  function createIncomingMessageContainer(messageText) {
+    const incomingMessageContainer = document.createElement('div');
+    incomingMessageContainer.classList.add('flex', 'mb-4', 'cursor-pointer');
+
+    const avatarContainer = document.createElement('div');
+    avatarContainer.classList.add(
+      'w-9',
+      'h-9',
+      'rounded-full',
+      'flex',
+      'items-center',
+      'justify-center',
+      'mr-2'
+    );
+
+    const avatarImage = document.createElement('img');
+    avatarImage.src =
+      'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+    avatarImage.alt = 'User Avatar';
+    avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+
+    avatarContainer.appendChild(avatarImage);
+
+    const messageContent = document.createElement('div');
+    messageContent.classList.add(
+      'flex',
+      'max-w-96',
+      'bg-dark-4',
+      'rounded-lg',
+      'p-3',
+      'gap-3'
+    );
+
+    const messageTextElement = document.createElement('p');
+    messageTextElement.innerText = messageText;
+    messageTextElement.classList.add('text-light-1');
+
+    messageContent.appendChild(messageTextElement);
+
+    incomingMessageContainer.appendChild(avatarContainer);
+    incomingMessageContainer.appendChild(messageContent);
+
+    return incomingMessageContainer;
+  }
 </script>
 {% endblock script %}

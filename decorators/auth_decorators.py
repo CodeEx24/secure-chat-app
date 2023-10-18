@@ -18,5 +18,5 @@ def userRequired(fn):
         if 'is_logged_in' in session and session['is_logged_in'] == True:
             return fn(*args, **kwargs)
         else:
-            return render_template('404.html'), 404
+            return render_template('pages/404.html'), 404
     return wrapper
