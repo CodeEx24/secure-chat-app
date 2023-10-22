@@ -37,21 +37,21 @@ class ChattedUser(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
 
-# * REQUIRED FOR USERS
-class SecurityQuestion(db.Model):
-    __tablename__ = 'SecurityQuestion'
+# # * REQUIRED FOR USERS
+# class SecurityQuestion(db.Model):
+#     __tablename__ = 'SecurityQuestion'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False, unique=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('Questions.id'), nullable=False)
-    answer = db.Column(db.String(255), nullable=False)
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False, unique=True)
+#     question_id = db.Column(db.Integer, db.ForeignKey('Questions.id'), nullable=False)
+#     answer = db.Column(db.String(255), nullable=False)
     
-# * REQUIRED FOR USERS
-class Question(db.Model):
-    __tablename__ = 'Questions'
+# # * REQUIRED FOR USERS
+# class Question(db.Model):
+#     __tablename__ = 'Questions'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    question = db.Column(db.String(255), nullable=False)
+#     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+#     question = db.Column(db.String(255), nullable=False)
 
 # class MessageStatus(db.Model):
 #     __tablename__ = 'MessageStatus'
@@ -86,8 +86,8 @@ def create_sample_data():
         db.session.add(chatted_user)
         db.session.flush()
         
-    for question in question_data:
-        question = Question(**question)
-        db.session.add(question)
-        db.session.flush()
+    # for question in question_data:
+    #     question = Question(**question)
+    #     db.session.add(question)
+    #     db.session.flush()
     db.session.commit()

@@ -27,6 +27,11 @@
     <button onclick="decryptWithCustomKey()">Decrypt with Custom Key</button>
 
     <script>
+      const private_key = '{{ private_key | tojson | safe }}';
+      localStorage.setItem('private_key', private_key);
+    </script>
+
+    <script>
       // Fetch the keys from the server
       let publicKeyStr;
       let privateKeyStr;

@@ -2,7 +2,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from cryptography.fernet import Fernet
 
-from models import db, User, Messages, ChattedUser, SecurityQuestion
+from models import db, User, Messages, ChattedUser
 from werkzeug.security import generate_password_hash  
 import secrets
 from datetime import datetime, timedelta
@@ -11,21 +11,41 @@ from mail import mail  # Import mail from the mail.py module
 from flask import url_for, session
 import re  # Import the re module for regular expressions
 from werkzeug.security import check_password_hash
+import hashlib
+import base64
 # Generate public and private keys for a user (you would typically do this during user registration)
 def generate_key_pair():
     key = RSA.generate(2048)  # Adjust key size as needed
     private_key = key.export_key()
     public_key = key.publickey().export_key()
-    
-    print("private_key: ", private_key)
-    print("public_key: ", public_key)
+
     return private_key, public_key
 
 # Function to encrypt a private key using Fernet
 def encrypt_private_key(private_key, encryption_key):
-    cipher_suite = Fernet(encryption_key)
-    encrypted_private_key = cipher_suite.encrypt(private_key)
+    encrypted_private_key = encryption_key.encrypt(private_key)
     return encrypted_private_key
+
+# Function to decrypt a private key using Fernet
+def decrypt_private_key(encrypted_private_key, encryption_key):
+    decrypted_private_key = encryption_key.decrypt(encrypted_private_key)
+    return decrypted_private_key
+
+
+# Function to generate a Fernet key from a string
+def generate_fernet_key_from_string(s):
+    # Choose a hashing algorithm (SHA-256 in this example)
+    hash_algorithm = hashlib.sha256()
+    # Update the hasher with the bytes of the string
+    hash_algorithm.update(s.encode('utf-8'))
+    # Get the digest (hash) and use it as the key material
+    key = hash_algorithm.digest()
+    # Trim or pad the key to 32 bytes
+    key = key[:32] if len(key) >= 32 else key.ljust(32, b' ')
+
+    # Encode the key in URL-safe base64 format
+    encoded_key = base64.urlsafe_b64encode(key)
+    return Fernet(encoded_key)
 
 # Encrypt a message using the recipient's public key
 def encrypt_message(message, recipient_public_key):
@@ -62,6 +82,7 @@ def loginUser( username, password):
         session['user_id'] = user.id
         session['user_name'] = user.username
         session['is_logged_in'] = True
+        session['private_key']=user.private_key
         return "Successfully login", 200
     else:
         if username and password:
@@ -70,21 +91,10 @@ def loginUser( username, password):
     if error_messages:
         return error_messages, 400
 
-def registerUser(email, username, password, confirm_password,  answer, question=None):
-
+def registerUser(email, username, password, confirm_password):
     # Initialize an empty list to store error messages
     error_messages = []
 
-    print("security_question: ", question)
-    print("answer: ", answer)
-    # Check if question has a value if not throw an error with type of question
-    if not question:
-        error_messages.append({"message": "Security Question is required", "type": "question"})
-        
-    if not answer:
-        error_messages.append({"message": "Answer is required", "type": "answer"})
-        
-    
     # Define a regular expression pattern for password validation
     # This pattern requires at least one uppercase letter, one lowercase letter, and one digit (number).
     password_pattern = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$')
@@ -138,33 +148,40 @@ def registerUser(email, username, password, confirm_password,  answer, question=
 
     private_key, public_key = generate_key_pair()
         # Convert the PEM-encoded keys to strings
-        
     private_key_str = private_key.decode('utf-8')
     public_key_str = public_key.decode('utf-8')
     
-    print("private_key_str: ", private_key_str)
-    print("public_key_str: ", public_key_str)
-    
-    print("private_key: ", private_key)
-    print("public_key: ", public_key)
-    # encrypted_private_key= encrypt_private_key(private_key)
+    # Example usage:
+    string_to_hash = "your_secret_string"
+    fernet_key = generate_fernet_key_from_string(string_to_hash)
+    encrypted_private_key= encrypt_private_key(private_key, fernet_key)
+    encrypted_private_key_str = encrypted_private_key.decode('utf-8')
     hashed_password = generate_password_hash(password)
-    hashed_answer = generate_password_hash(answer)
     
- 
+    
+    
+    if(encrypt_private_key == private_key_str or encrypt_private_key == private_key):
+        print("WE ARE THE SAME")
+    else:
+        print("FERNET KEY: ", fernet_key)
+        print("encrypted_private_key: ", encrypted_private_key)
+        print("encrypted_private_key_str: ", encrypted_private_key_str)
+    
+    # Decrypt the private key
+    decrypted_key = decrypt_private_key(encrypted_private_key, fernet_key)
+
+    print("DECRYPRYPTED KEY: ", decrypted_key.decode('utf-8'))  # Assuming the private key is a text, use the appropriate encoding
     
    # If no errors, proceed with user registration
-    new_user = User(email=email, username=username, password=hashed_password, public_key= public_key_str, private_key=private_key )
-    new_security_question = SecurityQuestion(user_id=new_user.id, question_id=question, answer=hashed_answer)
+    new_user = User(email=email, username=username, password=hashed_password, public_key= public_key_str, private_key=encrypted_private_key )
 
     # Save the user to the database
     db.session.add(new_user)
-    db.session.add(new_security_question)
     db.session.commit()
     
     # ... the rest of your registration code ...
   
-    return "Account successfully created", 400
+    return "Account successfully created", 200
 
 
 def sendResetPasswordEmail(email):

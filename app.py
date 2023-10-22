@@ -93,7 +93,14 @@ def create_app():
     @app.route('/practice')
     @userRequired
     def practice():
-        return render_template('pages/practice.html')
+        private_key=session['private_key']
+        return render_template('pages/practice.html', private_key=private_key)
+    
+    @app.route('/practice2')
+    @userRequired
+    def practice2():
+        
+        return render_template('pages/practice2.html')
         
         
     # Define the chat route

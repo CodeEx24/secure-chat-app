@@ -1,6 +1,6 @@
 # api/api_routes.py
 from flask import Blueprint, jsonify, request, redirect, url_for, flash, session, render_template
-from models import User, db, Question
+from models import User, db
 
 
 # from decorators.auth_decorators import role_required
@@ -101,26 +101,6 @@ def chat_with_user(username):
 
     # Handle the case where the user doesn't exist
     return "User not found", 404
-    
-    
-# Define the route for /username
-@chat_app_api.route('/security-question')
-def fetchSecurityQuestions():
-    # Retrieve the user from the database
-    data_questions = Question.query.filter_by().all()
-    if data_questions:
-            list_data_class_grade = []
-
-            for data in data_questions:
-                data = {
-                    "id": data.id,
-                    "question": data.question
-                }
-                list_data_class_grade.append(data)
-    # Return all question as json object
-    return jsonify(list_data_class_grade), 200
-    
-    
     
     
 # Define the route for /username
