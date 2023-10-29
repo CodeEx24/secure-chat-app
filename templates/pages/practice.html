@@ -19,6 +19,11 @@
     <p>Decrypted Message: <span id="decryptedMessage"></span></p>
     <p>Decrypted Message 2: <span id="decryptedMessage2"></span></p>
 
+    <!-- <div id="hidden-private-key" data-private-key="{{ private_key }}"></div> -->
+
+    <div id="hidden-private-key" private-key="{{ private_key }}"></div>
+    <div id="hidden-public-key" public-key="{{ public_key }}"></div>
+
     <label for="customPrivateKey">Custom Private Key:</label>
     <textarea
       id="customPrivateKey"
@@ -27,29 +32,48 @@
     <button onclick="decryptWithCustomKey()">Decrypt with Custom Key</button>
 
     <script>
-      const private_key = '{{ private_key | tojson | safe }}';
+      const private_key = '{{ private_key }}';
       localStorage.setItem('private_key', private_key);
     </script>
 
     <script>
+      // Retrieve the hidden private key
+      var hiddenPrivateKeyElement =
+        document.getElementById('hidden-private-key');
+      var private_keyTo = hiddenPrivateKeyElement.getAttribute('private-key');
+
+      var hiddenPublicKeyElement = document.getElementById('hidden-public-key');
+      var pub_key2 = hiddenPublicKeyElement.getAttribute('public-key');
+
+      console.log('private_keyTo: ', private_keyTo);
+      console.log('pub_key2: ', pub_key2);
+    </script>
+    <script>
       // Fetch the keys from the server
-      let publicKeyStr;
-      let privateKeyStr;
+      let publicKeyStr = pub_key2;
+      let privateKeyStr = private_keyTo;
 
       let publicKey;
       let privateKey;
-      const apiUrl = "{{ url_for('chat_app_api.getRSA') }}";
-      fetch(apiUrl)
-        .then((response) => response.json())
-        .then((data) => {
-          publicKeyStr = data.publicKey;
-          privateKeyStr = data.privateKey;
-          console.log('privateKeyStr: ', privateKeyStr);
 
-          publicKey = forge.pki.publicKeyFromPem(publicKeyStr);
-          privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
-        })
-        .catch((error) => console.error('Error fetching keys:', error));
+      function ForgeKeys() {
+        publicKey = forge.pki.publicKeyFromPem(publicKeyStr);
+        privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
+
+        console.log('publicKeyStr: ', publicKeyStr);
+        console.log('privateKeyStr: ', privateKeyStr);
+      }
+
+      ForgeKeys();
+      // const apiUrl = "{{ url_for('chat_app_api.getRSA') }}";
+      // fetch(apiUrl)
+      //   .then((response) => response.json())
+      //   .then((data) => {
+      //     publicKeyStr = data.publicKey;
+      //     privateKeyStr = data.privateKey;
+      //     console.log('privateKeyStr: ', privateKeyStr);
+      //   })
+      //   .catch((error) => console.error('Error fetching keys:', error));
 
       function encryptMessage() {
         const message = document.getElementById('message').value;

@@ -1,6 +1,6 @@
 # api/api_routes.py
 from flask import Blueprint, jsonify, request, redirect, url_for, flash, session, render_template
-from models import User, db
+from models import User, db, Question
 
 
 # from decorators.auth_decorators import role_required
@@ -22,9 +22,10 @@ chat_app_api = Blueprint('chat_app_api', __name__)
 def login():
    
     if request.method == 'POST':
+        
         username = request.form['username']
         password = request.form['password']
-        print("GET IT ")
+
         result, status_code = loginUser(username, password)
         response_data = {"result": result} if status_code == 200 else {"errors": result}
         print(response_data)
@@ -102,13 +103,31 @@ def chat_with_user(username):
     # Handle the case where the user doesn't exist
     return "User not found", 404
     
+# Define the route for /username
+@chat_app_api.route('/security-question')
+def fetchSecurityQuestions():
+    # Retrieve the user from the database
+    data_questions = Question.query.filter_by().all()
+    if data_questions:
+            list_data_class_grade = []
+
+            for data in data_questions:
+                data = {
+                    "id": data.id,
+                    "question": data.question
+                }
+                list_data_class_grade.append(data)
+    # Return all question as json object
+    return jsonify(list_data_class_grade), 200
+
+    
     
 # Define the route for /username
 @chat_app_api.route('/get_rsa_keys')
 def getRSA():
-    publicKeyStr ='-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoqEXgKViXKvj5dJZ+9xA 4VtVtstg11pBxvepNevd8eWLMzV8wfmBE3KZSsV9erb226sAp2DIlImAjOcNE04n r0Bi4KMd7bHU8sCUpgxNw/H1wyrA6QXQ2cS8GN5kzMcDMHtILH3y7p/tpYKeS1YK oIVJhybug8MFgkdaR07Dl2haOni2GTzBTc50crQx5yjiXT8Gb+aK2Y3CD6+H11ys myOnplIOXixmPaj3Fu0nF+6l4kCy39rFLkA1KjieE6O6Gr2k9k9p93FHjDcxNZAy 3zgIJJzgPsjGe0HQZA8uw5pf3V9MwmtkVv8A4fRus7TyAlA0U4Wxqrzv0tFxucex vQIDAQAB -----END PUBLIC KEY-----';
+    publicKeyStr ='-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwMTDArkZRIxEnMAxkv9X iDbp+9kM0AeoBg0zFWEpflSJ0m0b6SjTkUnarpCkOKnHJ1C0zQyz6ceYtoREcEcV M3dVc0QsWjcj4h7ejmBlVvhZLkaRdpOm6Unrmgt4zxNOzhhurNJ/n8Qe7dXUnanZ a/PxEQgRvsJ72fG7Dq1kpmQGO9OeCVAOEkAogb9AkE1skcEBBd1fnOASjCASaGK6 nniXOpyB4mHiLA6dUBP7jBXPHV4oZYRtmoXsEw5eiw6GSdUgfoif57ksXOz9qzr1 Yhqajl5r4Ce/RhH7uSNgi+mv1xInoDIS3d7xgV+Y/jBPzimv3/Kdo+uCk1PCm6Bh 9wIDAQAB -----END PUBLIC KEY-----';
 
-    privateKeyStr ='-----BEGIN RSA PRIVATE KEY----- MIIEowIBAAKCAQEAt1zj1f+w0I6m5tM0qLx6uMoXhXx72/B3Jlyiccvd5ME7fdvS U9FF4QaImnUSdX9xvGxKamTM7ktmZwiKj2ouHG+kVyqZq/PHlFRB8qGRPqYnQR2c OvyBX8h/Y3UJetmZOijeQJeYWZeaNNnGb/KOyY7RvLCYrz2eeTPb63UDoSgVW/7w 1Ijljf0m8/NU5G0j61B5WVs2HY5HA2mrJlRd3rUX/KBOxOa+u8itmfC+QWB8nNvf HTan9ebahIHpKwaIIe2kdDAKNXvxzD/HUI/gwL3BJ59nfH74TbMhHPHcE7gp+Ic5 jiPEtfCTLW9DM4X1CNkAmyEZ7oz7gO+TKBs0ywIDAQABAoIBADFzuPK/KeWlg3ff YGVdp89smZljsFfp64iKFTmRnP+T6cKQ5ZG7cBg3VeIqTtcnjvodTpiRJP/jj/Ob xxrUrSj4Jx9nGtjYP2xOqRaR4oU99HpITRlPfmjhvxGIwAzE4OFhokdTW0BWdb1p Om54wW+0t/YmvpcMjE/t35MKFPeCTgUma9GXoW6oNh22vWTJ7kQVZgSQKizIcppE D1JyZax1bbix712P11LQYN+el83Ez55l2YQWMX8nuRk5UptX6H7Qyd0urZqMGCb/ iOCBnH5EIuMgmHZqTYeP52vRYCBfDZ7qGu3PpCE2ec5JuHBtn0RtaO7TwJ5WE9Nc +nhsIokCgYEA0IyOkG7+IwEIbHsvgCsVmUJTISpmWQ5k35D6s60P8H3NcNIGZdZ2 MTjTcdxvcHkCOv8YTNLs/3sWvRiJ72YAGEg1Qcl25Om31eDths5QVV4p5gKdyaCQ JLx19TKQwT43qx6htt9tSJOTo53iidmD7UppuuzLdMDM21eX0p30g38CgYEA4RVN V0HY/Hs7qJXdaF0Pt0x8o/o0P4U5X8KigXtbZY81OarnMbguO8GAxjC3aLAvmT1l miuWH7C33ZBRFQD+rQxZ7VlcOJ0u+XJUJrK7kZX8Vud8pbz0op1BEWKnunLK7XMN LwaQGpahMoXARo0mK+xs2SLu5CNicUdMSIzzxLUCgYAniP3d06zJ5gA60H+IxKIr k68+slMEvv3QhCOCvGQxKygvIyGjXKy7WBJ9m1Rk9gu+M23f4nybUjJVVrmPcL7D 26x89Dxd2RDIswNUcvg3tsoqmIRhHNc2n6OdACEBAVJ8VipCCMkm4RM0CVJQ37Nq 4Jh6nzlSwNoVGt3lR5x68QKBgG821VYuBQcL5PhxxEqS4PcS5esn77ULIMQ+KYmM 6CYQUp5B4aZheQaxn+1NmPIzS/GNsqwwqSbTbKYfbtDQAwaCOdTa+IRItjMu2IGe gqt2zo4qJx7FdKL8zG/IrVOk8LvOw07fEUjx8IhEKjMx/xBo64eGiT9UdInATuLy MmiZAoGBALdmaDoB2a5PegLg0lI0i6relHmZlFHvRTW0UC4Son5x51n/seFoPWt2 Dq7EcidnKC2FtsbdKSzPaXe4RVrvM8smcSEzctVCpowpW1T6ZhKxCcsuZYItrK5K G5Axnazt11YQhax4+v2V/uLrk5LVlchiDhneuBttIN3q/M0mi5so -----END RSA PRIVATE KEY-----';
+    privateKeyStr =b'-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKCAQEAwMTDArkZRIxEnMAxkv9XiDbp+9kM0AeoBg0zFWEpflSJ0m0b\n6SjTkUnarpCkOKnHJ1C0zQyz6ceYtoREcEcVM3dVc0QsWjcj4h7ejmBlVvhZLkaR\ndpOm6Unrmgt4zxNOzhhurNJ/n8Qe7dXUnanZa/PxEQgRvsJ72fG7Dq1kpmQGO9Oe\nCVAOEkAogb9AkE1skcEBBd1fnOASjCASaGK6nniXOpyB4mHiLA6dUBP7jBXPHV4o\nZYRtmoXsEw5eiw6GSdUgfoif57ksXOz9qzr1Yhqajl5r4Ce/RhH7uSNgi+mv1xIn\noDIS3d7xgV+Y/jBPzimv3/Kdo+uCk1PCm6Bh9wIDAQABAoIBAEc0BrJJS7+JrkhW\nJ5mcDqmGWyxHMpfe1B4UHxPdFVYQBO6AlegsR+WpKYkEbVxuvdzUT0xUTlpiexKj\nzaHJZ9fgUuRmQJm8N1ltPJjLm3Mh/dL9hvqNNICEaO24IhIfGCNBXBQjFrgdWa1R\nKB1qoSBidV9sox1auiO5SfZ0brKUp3pyhivyy0DOFaPM9aeuTQVU0x+DIwjYVMGf\npJaDQS2FyqT+iPMiVZtdZICDGGmi2vdHu9KLkIBA1zUHbtEKTo1jwrqE9uOaILvS\nVNpR/Wdf36g9+4/E5t9oh52WFyaQcly3BVpsda4AxO40iR0XTH57LxHd5netyFka\nPOMCMs0CgYEAxPwdSZVSR3U3RWwXVXS5hUpMGonfT6vNbTldyshTIBr/notMRrQG\nxW2C0I5FVXfws1VzJiLbpMiwotLMQ8/RM5Mvfws5a00KUu55xyZ+tUS105AViuPE\ng/ZLTRISKNir3q3HCgbaGpn4a28+78I0jzTKR6jKK8jSaCtPaze8LuUCgYEA+oVI\nCMLZ6GUb+zEqliJcuvT4sHvPVck4sx/bJ+HMW+JT0vsoNw9rm2rsJEHvjJGbUUIq\nZUy/0Rt3A3zQ2b8y26EDFTAo70cPJNVaCA9UrJowZzOb3Ai1SemppHOZx0M7m4sL\n/cdZDtVLbZLUG95XM2ahfb8AotLaHeRex+h446sCgYAIRlLwoV4odEsTFnxQcavN\nZpaV0s7XqO7jNLK07v9W7Otp/I4CtlNGfdgt7JwLABPTZLaGlpZFcMzCujosaxFt\nqjQnkRAjasQRQcVJ0VsnQDCnJ3lQMUszA+ib3zN2Fcv6ebBPwoPs9CTUVoL9TVop\n3dzVb8i2WCRGjfMzHM9B5QKBgBfx1UjBFwLXZy1DLcbb0fEsqPh1XQPeD8VPLitJ\nsba2kzx/NQDOQILCXX+5raPJ5waFRHgaNdtOvLlgnLWzSLElWp4T1FXKfPAQVGKg\n1H8K3cV/cU4+ptVBuC03v2MEUhYz3BmNjD2WtXbrqcpgHgWTsavLLcxiSubAhS6m\nUaexAoGAQPGcNlOcD2c3jvM4rLLzw2M04H3Z6sCmLgB1Letb5SbtAkpxCR/KbKP/\nf2PjLuBKcSFTRtd1qeR3Nncc+XXBTDSUxr8PsOkVgPHjnJIdn8LJDUwbFAl8fMgz\nwRAusIIKEsO2WRdiNFFy1x0NJDXjbgm91GcIwlhwsKb32NkJ5k4=\n-----END RSA PRIVATE KEY-----';
     # Retrieve the user from the database
     
     return jsonify(publicKey=publicKeyStr, privateKey=privateKeyStr)

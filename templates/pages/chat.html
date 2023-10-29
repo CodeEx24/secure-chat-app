@@ -86,6 +86,9 @@
           <!-- Search result items will be appended here -->
         </div>
       </div>
+
+      <input type="hidden" id="publicKey" value="{{ public_key }}" />
+      <input type="hidden" id="privateKey" value="{{ private_key }}" />
     </header>
 
     <!-- Contact List -->
@@ -290,6 +293,8 @@
 
   <!-- Main Chat Area -->
   <div class="flex-1">
+    <div id="hidden-private-key" private-key="{{ private_key }}"></div>
+    <div id="hidden-public-key" public-key="{{ public_key }}"></div>
     <!-- Chat Header -->
     <header
       class="bg-dark-2 p-6 text-gray-700 text-xl font-bold h-20 text-light-1"
@@ -328,21 +333,13 @@
 
 <!-- SCRIPTS -->
 {% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
+
 <!-- Scroll to bottom -->
-<script>
-  // Get the chat messages container
-  const chatMessages = document.querySelector('.message-bottom');
-
-  // Scroll to the end of the chat messages
-  function scrollToBottom() {
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-
-  scrollToBottom();
-</script>
+<script></script>
 
 <!-- Menu button dropdown (Header) -->
-
+<!-- SEND MESSAGES TRIGGER ON ENTER -->
 <script>
   // JavaScript for showing/hiding the menu
   const menuButton = document.getElementById('menuButton');
@@ -362,6 +359,25 @@
       menuDropdown.classList.add('hidden');
     }
   });
+
+  // Listen for Enter key press in the message input
+  document
+    .getElementById('message-input')
+    .addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        sendMessage(); // Trigger the send button's click event
+      }
+    });
+
+  // Scroll at the bottom
+  const chatMessages = document.querySelector('.message-bottom');
+
+  // Scroll to the end of the chat messages
+  function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  scrollToBottom();
 </script>
 
 <!-- SEARCH FUNCTIONS FETCH -->
@@ -473,80 +489,6 @@
   });
 </script>
 
-<script>
-  // Listen for Enter key press in the message input
-  document
-    .getElementById('message-input')
-    .addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') {
-        sendMessage(); // Trigger the send button's click event
-      }
-    });
-</script>
-
-<!-- Fetch Current User -->
-<script></script>
-
-<!-- ENCRTYPTED PACKAGE -->
-<script src="https://unpkg.com/openpgp@4.10.10/dist/openpgp.min.js"></script>
-
-<!-- ENCRYPTION AND DECRYPTION -->
-<script>
-  async function encryptMessage(message, recipientPublicKey) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(message);
-
-    const recipientPublicKeyBuffer = await crypto.subtle.importKey(
-      'spki',
-      recipientPublicKey,
-      {
-        name: 'RSA-OAEP',
-        hash: 'SHA-256',
-      },
-      false,
-      ['encrypt']
-    );
-
-    const encryptedBuffer = await crypto.subtle.encrypt(
-      {
-        name: 'RSA-OAEP',
-      },
-      recipientPublicKeyBuffer,
-      data
-    );
-
-    const encryptedMessage = new Uint8Array(encryptedBuffer);
-    return encryptedMessage;
-  }
-</script>
-
-<script>
-  async function decryptMessage(encryptedMessage, privateKey) {
-    const privateKeyBuffer = await crypto.subtle.importKey(
-      'pkcs8',
-      privateKey,
-      {
-        name: 'RSA-OAEP',
-        hash: 'SHA-256',
-      },
-      false,
-      ['decrypt']
-    );
-
-    const decryptedBuffer = await crypto.subtle.decrypt(
-      {
-        name: 'RSA-OAEP',
-      },
-      privateKeyBuffer,
-      encryptedMessage
-    );
-
-    const decoder = new TextDecoder();
-    const decryptedMessage = decoder.decode(decryptedBuffer);
-    return decryptedMessage;
-  }
-</script>
-
 <!-- SOCKETIO -->
 <script>
   // Get the last ellement in my url
@@ -567,6 +509,9 @@
     const messageInput = document.getElementById('message-input');
     const message = messageInput.value;
     if (message) {
+      console.log('MESSAGE: ', message);
+      encryptMessage(message);
+
       socket.emit('send_message', {
         message: message,
       });
@@ -706,4 +651,44 @@
     return incomingMessageContainer;
   }
 </script>
+
+<script>
+  let publicKey;
+  let privateKey;
+
+  // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
+  let publicKeyStr = document.getElementById('publicKey').value;
+  let privateKeyStr = document.getElementById('privateKey').value;
+
+  ForgeKeys();
+
+  function ForgeKeys() {
+    publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
+    privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
+  }
+
+  function encryptMessage(message) {
+    // Ensure publicKey is a valid Forge.js public key
+    const encryptedMessage = publicKey.encrypt(forge.util.encodeUtf8(message));
+    console.log('encryptedMessage: ', encryptedMessage);
+    const base64EncryptedMessage = forge.util.encode64(encryptedMessage);
+
+    console.log('base64EncryptedMessage: ', base64EncryptedMessage);
+    decryptMessage(base64EncryptedMessage);
+  }
+
+  function decryptMessage(message) {
+    const encryptedMessage = forge.util.decode64(message);
+
+    try {
+      const decryptedMessage = privateKey.decrypt(encryptedMessage);
+      console.log('decryptedMessage: ', decryptedMessage);
+      // document.getElementById('decryptedMessage').textContent =
+      //   forge.util.decodeUtf8(decryptedMessage);
+    } catch (error) {
+      console.log('Something went wrong.');
+    }
+  }
+</script>
+
 {% endblock script %}
