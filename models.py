@@ -26,7 +26,7 @@ class Messages(db.Model):
     __tablename__ = 'Messages'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    chatted_id = db.Column(db.Integer, db.ForeignKey('ChattedUser.id'), nullable=False)
+    chatted_id = db.Column(db.Integer, db.ForeignKey('ChattedUser.id', ondelete="CASCADE"), nullable=False)
     timestamp = db.Column(db.DateTime)
     sender_ciphertext = db.Column(db.String, nullable=False)
     receiver_ciphertext = db.Column(db.String, nullable=False)
@@ -35,15 +35,15 @@ class ChattedUser(db.Model):
     __tablename__ = 'ChattedUser'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
-    recipient_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
 
 
 class UserKey(db.Model):
     __tablename__ = 'UserKeys'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
     private_key = db.Column(db.String, nullable=False)
 
 # # * REQUIRED FOR USERS
@@ -51,8 +51,8 @@ class SecurityQuestion(db.Model):
     __tablename__ = 'SecurityQuestion'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False, unique=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('Questions.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False, unique=True)
+    question_id = db.Column(db.Integer, db.ForeignKey('Questions.id', ondelete="CASCADE"), nullable=False)
     answer = db.Column(db.String(255), nullable=False)
     
     

@@ -295,7 +295,6 @@
       receiver_username: receiver_username,
     });
   }
-
   // On connect, it will get the current user public key
   socket.on('chat_details', (data) => {
     console.log(data.chat_user);
@@ -303,8 +302,9 @@
 
     data.chat_user.forEach((chat) => {
       // Create the HTML structure for each chat user
-      const chatUserDiv = document.createElement('div');
-      chatUserDiv.classList.add(
+      const chatUserLink = document.createElement('a'); // Wrap the div in an anchor tag
+      chatUserLink.href = `/chat/${chat.id}`; // Set the link's URL based on chat.id
+      chatUserLink.classList.add(
         'flex',
         'items-center',
         'cursor-pointer',
@@ -336,7 +336,7 @@
       const usernameH2 = document.createElement('h2');
       usernameH2.classList.add('text-lg', 'text-light-1', 'font-inter');
       usernameH2.textContent = chat.username;
-      // Check if data.user_id is equal to chat.sender_id then add "You: " at the start of the message in which you is span and the bold
+      // Check if data.user_id is equal to chat.sender_id, then add "You: " at the start of the message in which 'You' is inside a <span> tag and bold
       const messageContainer = document.createElement('div');
       messageContainer.classList.add('flex', 'gap-2', 'items-center');
 
@@ -349,18 +349,17 @@
 
       const messageP = document.createElement('p');
       messageP.classList.add('text-light-2', 'text-sm', 'line-clamp-1');
-
       messageP.textContent = decryptMessage(chat.message);
 
       messageDiv.appendChild(messageP);
 
       contentDiv.appendChild(usernameH2);
       contentDiv.appendChild(messageDiv);
-      chatUserDiv.appendChild(avatarDiv);
-      chatUserDiv.appendChild(contentDiv);
+      chatUserLink.appendChild(avatarDiv);
+      chatUserLink.appendChild(contentDiv);
 
-      // Append the chat user HTML to the container
-      chatUserContainer.appendChild(chatUserDiv);
+      // Append the chat user link to the container
+      chatUserContainer.appendChild(chatUserLink);
     });
   });
 </script>

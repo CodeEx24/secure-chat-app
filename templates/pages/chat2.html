@@ -20,8 +20,8 @@
     >
       <div class="relative">
         <!-- <button
-            class="flex items-center justify-center w-8 h-8 p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:bg-gray-300 transition duration-300"
-          ></button> -->
+          class="flex items-center justify-center w-8 h-8 p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:bg-gray-300 transition duration-300"
+        ></button> -->
         <button
           id="menuButton"
           class="focus:outline-none flex items-center justify-center w-8 h-8 p-2 rounded-md focus:outline-none transition duration-300"
@@ -89,17 +89,205 @@
 
       <input type="hidden" id="publicKey" value="{{ public_key }}" />
       <input type="hidden" id="privateKey" value="{{ private_key }}" />
-      <input type="hidden" id="userId" value="{{ user_id }}" />
     </header>
 
     <!-- Contact List -->
-    <div
-      class="overflow-y-auto h-screen mb-9 pb-20 bg-dark-2"
-      id="chat-user-container"
-    >
-      <!-- <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+    <div class="overflow-y-auto h-screen mb-9 pb-20 bg-dark-2">
+      <div
+        class="flex items-center cursor-pointer hover:bg-dark-3 p-4 bg-active"
+      >
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Alice</h2>
+          <p class="text-light-2 text-sm line-clamp-1">Hoorayy!!</p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/ad922e/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Martin</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            That pizza place was amazing! We should go again sometime. 🍕
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/2e83ad/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Charlie</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Hey, do you have any recommendations for a good movie to watch?
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/c2ebff/0f0b14.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">David</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            I just finished reading a great book! It was so captivating.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/e7c2ff/7315d1.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Ella</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            What's the plan for this weekend? Anything fun?
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/ffc2e2/ffdbdb.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Fiona</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            I heard there's a new exhibit at the art museum. Interested?
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/f83f3f/4f4f4f.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">George</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            I tried that new cafe downtown. The coffee was fantastic!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/dddddd/999999.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Hannah</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            I'm planning a hiking trip next month. Want to join?
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/70ff33/501616.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Ian</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Let's catch up soon. It's been too long!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Jack</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Remember that hilarious joke you told me? I can't stop laughing!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">Jack</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Remember that hilarious joke you told me? I can't stop laughing!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
+          <img
+            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
+            alt="User Avatar"
+            class="w-12 h-12 rounded-full"
+          />
+        </div>
+        <div class="flex-1">
+          <h2 class="text-lg text-light-1 font-inter">HELLO</h2>
+          <p class="text-light-2 text-sm line-clamp-1">
+            Remember that hilarious joke you told me? I can't stop laughing!
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
         <div class="w-12 h-12 bg-gray-300 rounded-full mr-3"></div>
-      </div> -->
+      </div>
     </div>
   </div>
 
@@ -110,8 +298,9 @@
     <!-- Chat Header -->
     <header
       class="bg-dark-2 p-6 text-gray-700 text-xl font-bold h-20 text-light-1"
-      id="username"
-    ></header>
+    >
+      USERNAME {{id}}
+    </header>
 
     <!-- Chat Messages CHART CONTAINER-->
     <div
@@ -183,6 +372,7 @@
   // Scroll to the end of the chat messages
   function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    console.log('SCROLL TO THE BOTTOM');
   }
 </script>
 
@@ -255,7 +445,9 @@
         // Show the search results container
         searchResultsDropdown.classList.remove('hidden');
       })
-      .catch((error) => {});
+      .catch((error) => {
+        console.error('Error fetching search results:', error);
+      });
   }
 
   // Handle input events in the search input (for real-time search)
@@ -315,7 +507,6 @@
   // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
   let publicKeyStr = document.getElementById('publicKey').value;
   let privateKeyStr = document.getElementById('privateKey').value;
-  let userId = document.getElementById('userId').value;
 
   ForgeKeys();
   function ForgeKeys() {
@@ -337,207 +528,10 @@
   }
 </script>
 
-<!-- SOCKETIO -->
-<script>
-  socket.on('connect', () => {});
-
-  const chatContainer = document.getElementById('chat-container');
-  // Get the last ellement in my url
-  // const url = window.location.href;
-  // const urlArray = url.split('/');
-  const receiver_username = urlArray[urlArray.length - 1];
-
-  function sendMessage() {
-    // Get the message value and chat container
-    const message = document.getElementById('message').value;
-    // Send the message and reciever username
-    socket.emit('send_message', {
-      message: message,
-      receiver_username: receiver_username,
-    });
-  }
-
-  // Function to update the sidebar with the new message
-  function updateSidebar(sender, receiver, message) {
-    if (sender == userId) {
-      // Get the link element from createChatUserElement in which a tag id is equivalent to receiver
-      const link = document.getElementById(`${receiver}`);
-      // Get the span-id
-      const span = document.getElementById(`span-${receiver}`);
-      // Get the message-id
-      const messageElement = document.getElementById(`message-${receiver}`);
-
-      // Update the text content of message
-      messageElement.textContent = message;
-
-      if (span) {
-        // Update the text content of span
-        span.innerHTML = 'You: ';
-      }
-      const chatUserContainer = document.getElementById('chat-user-container');
-      // Move the link as the first in chatUserContainer
-      chatUserContainer.prepend(link);
-    } else {
-      // Get the link element from createChatUserElement in which a tag id is equivalent to receiver
-      const link = document.getElementById(`${sender}`);
-      // Get the span-id
-      const span = document.getElementById(`span-${sender}`);
-      // Get the message-id
-      const messageElement = document.getElementById(`message-${sender}`);
-
-      // Update the text content of message
-      messageElement.textContent = message;
-
-      if (span) {
-        // Update the text content of span
-        span.innerHTML = '';
-      }
-
-      const chatUserContainer = document.getElementById('chat-user-container');
-      // Move the link as the first in chatUserContainer
-      chatUserContainer.prepend(link);
-    }
-  }
-
-  // Define a function to create the chat user element
-  function createChatUserElement(chat) {
-    const chatUserLink = document.createElement('a');
-    chatUserLink.id = chat.id;
-    chatUserLink.href = `/chat/${chat.id}`;
-    chatUserLink.classList.add(
-      'flex',
-      'items-center',
-      'cursor-pointer',
-      'hover:bg-dark-3',
-      'p-4',
-      'bg-active'
-    );
-
-    const avatarDiv = document.createElement('div');
-    avatarDiv.classList.add(
-      'w-12',
-      'h-12',
-      'bg-gray-300',
-      'rounded-full',
-      'mr-3'
-    );
-
-    const avatarImg = document.createElement('img');
-    avatarImg.src =
-      'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'; // Replace with the actual avatar URL
-    avatarImg.alt = 'User Avatar';
-    avatarImg.classList.add('w-12', 'h-12', 'rounded-full');
-
-    avatarDiv.appendChild(avatarImg);
-
-    const contentDiv = document.createElement('div');
-    contentDiv.classList.add('flex-1');
-
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('flex');
-
-    const usernameH2 = document.createElement('h2');
-    usernameH2.classList.add('text-lg', 'text-light-1', 'font-inter');
-    usernameH2.textContent = chat.username;
-
-    const messageContainer = document.createElement('div');
-    messageContainer.classList.add('flex', 'gap-2', 'items-center');
-
-    if (chat.sender_id != userReceiverId) {
-      const span = document.createElement('span');
-      span.classList.add(
-        'font-black',
-        'text-sm',
-        'text-light-2',
-        `span-${chat.id}`
-      );
-
-      span.innerHTML = 'You:&nbsp';
-      messageDiv.appendChild(span);
-    }
-
-    const messageP = document.createElement('p');
-    messageP.classList.add('text-light-2', 'text-sm', 'line-clamp-1');
-    messageP.id = `message-${chat.id}`;
-    messageP.textContent = decryptMessage(chat.message);
-
-    messageDiv.appendChild(messageP);
-    contentDiv.appendChild(usernameH2);
-    contentDiv.appendChild(messageDiv);
-    chatUserLink.appendChild(avatarDiv);
-    chatUserLink.appendChild(contentDiv);
-
-    return chatUserLink;
-  }
-
-  // Define a function to update the chat header
-  function updateChatHeader(username, image) {
-    const headerElement = document.createElement('header');
-    headerElement.classList.add(
-      'flex',
-      'items-center',
-      'bg-dark-2',
-      'p-6',
-      'text-gray-700',
-      'text-xl',
-      'font-bold',
-      'h-20',
-      'text-light-1'
-    );
-
-    const centeringDiv = document.createElement('div');
-    centeringDiv.classList.add('flex', 'items-center', 'justify-center');
-
-    const imageElement = document.createElement('img');
-    imageElement.src = image; // Replace with the actual image URL
-    imageElement.alt = 'User Image';
-    imageElement.classList.add('w-12', 'h-12', 'rounded-full', 'mr-3');
-
-    const usernameSpan = document.createElement('span');
-    usernameSpan.textContent = username;
-    usernameSpan.classList.add('font-black', 'text-xl');
-
-    centeringDiv.appendChild(imageElement);
-    centeringDiv.appendChild(usernameSpan);
-    headerElement.appendChild(centeringDiv);
-
-    const existingHeader = document.querySelector('#username');
-    existingHeader.replaceWith(headerElement);
-  }
-
-  // Define a function to render the chat history
-  function renderChatHistory(chatHistory) {
-    const chatContainer = document.getElementById('chat-container');
-    chatContainer.innerHTML = '';
-
-    chatHistory.forEach(function (message) {
-      if (message.sender == userReceiverId) {
-        // Handle outgoing messages from the current user
-        const decryptedMessage = decryptMessage(message.cipher);
-
-        const incomingMessageContainer =
-          createIncomingMessageContainer(decryptedMessage);
-        chatContainer.appendChild(incomingMessageContainer);
-      } else {
-        // Handle outgoing messages from the current user
-        const decryptedMessage = decryptMessage(message.cipher);
-        const outgoingMessageContainer =
-          createOutgoingMessageContainer(decryptedMessage);
-        chatContainer.appendChild(outgoingMessageContainer);
-      }
-    });
-
-    setTimeout(() => {
-      scrollToBottom();
-    }, 10);
-  }
-</script>
-
 <!-- Send Message Function -->
 <script>
   function sendMessage() {
     const messageInput = document.getElementById('message-input');
-
     const message = messageInput.value;
     if (message) {
       const senderEncryptedMessage = encryptMessage(publicKey, message);
@@ -545,6 +539,7 @@
         recipientPublicKey,
         message
       );
+
       socket.emit('send_message', {
         // message: message,
         senderEncryptedMessage: senderEncryptedMessage,
@@ -558,59 +553,33 @@
 <!-- EMITTING THE SOCKET -->
 <script>
   socket.on('message', function (data) {
+    console.log('DATA SENDER: ', data.sender);
+    // console.log('RECEIVER: ', userReceiverId);
     const chatContainer = document.getElementById('chat-container');
-    if (data.sender == userId) {
-      // Handle outgoing messages from the current user
-      const decryptedMessage = decryptMessage(data.senderCipher);
-      const outgoingMessageContainer =
-        createOutgoingMessageContainer(decryptedMessage);
-      chatContainer.appendChild(outgoingMessageContainer);
-      updateSidebar(data.sender, data.receiver, decryptedMessage);
-    } else if (data.sender == userReceiverId) {
+
+    if (data.sender == userReceiverId) {
       // Handle outgoing messages from the current user
       const decryptedMessage = decryptMessage(data.receiverCipher);
 
       const incomingMessageContainer =
         createIncomingMessageContainer(decryptedMessage);
       chatContainer.appendChild(incomingMessageContainer);
-
-      updateSidebar(data.receiver, decryptMessage(data.senderCipher));
     } else {
       // Handle outgoing messages from the current user
-      const decryptedMessage = decryptMessage(data.receiverCipher);
-
-      updateSidebar(
-        data.sender,
-        data.receiver,
-        decryptMessage(data.receiverCipher)
-      );
+      const decryptedMessage = decryptMessage(data.senderCipher);
+      const outgoingMessageContainer =
+        createOutgoingMessageContainer(decryptedMessage);
+      chatContainer.appendChild(outgoingMessageContainer);
     }
-
     scrollToBottom();
   });
 
   // On connect it will get the current user public key
   socket.on('chat_details', (data) => {
-    if (data.chat_history) {
-      updateChatHeader(
-        data.current_chat_username,
-        'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'
-      );
-      renderChatHistory(data.chat_history);
-    }
+    console.log(data);
+    recipientPublicKey = forge.pki.publicKeyFromPem(data.chat_user_public_key);
 
-    const chatUserContainer = document.getElementById('chat-user-container');
-
-    data.chat_user.forEach((chat) => {
-      chat.isCurrentUser = data.user_id === chat.sender_id;
-      const chatUserElement = createChatUserElement(chat);
-      chatUserContainer.appendChild(chatUserElement);
-    });
-
-    recipientPublicKey = forge.pki.publicKeyFromPem(
-      data.current_chat_public_key
-    );
-
+    console.log('EMITTED IN CHAT HISTORY');
     const chatContainer = document.getElementById('chat-container');
     chatContainer.innerHTML = ''; // Clear existing chat history
     data.chat_history.forEach(function (message) {

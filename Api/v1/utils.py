@@ -365,8 +365,8 @@ def retrieve_chat_history(sender_id, recipient_id):
                 ChattedUser).filter(ChattedUser.sender_id == recipient_id, ChattedUser.recipient_id == sender_id).first()
     
     if userSendMessages and userReceiveMessages:
-        print("userSendMessages: ", userSendMessages)
-        print("userReceiveMessages: ", userReceiveMessages)
+        # print("userSendMessages: ", userSendMessages)
+        # print("userReceiveMessages: ", userReceiveMessages)
         # Retrive the message in which chatted id is either of the two userSendMessages.id and userReceiveMessages.id
         sendChatHistory = db.session.query(Messages).filter(
             or_(

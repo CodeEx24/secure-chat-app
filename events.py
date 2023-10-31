@@ -8,60 +8,65 @@ from sqlalchemy import or_
 
 from flask_socketio import emit
 from datetime import datetime
+from sqlalchemy import or_
+from flask_socketio import emit, join_room
+
 
 @socketio.on('connect')
 def handle_connect():
-    user_id = session.get('user_id')  # Get the session user id
-    user = User.query.filter_by(id=user_id).first()
-    list_chatted_user = []
+    user_id = session.get('user_id')
+    chat_user_id = request.args.get('chat_user_id')
+    user = User.query.get(user_id)
+    
+    if chat_user_id:
+        print("IN CHAT USER ID: ", chat_user_id)
+        current_chat_user = User.query.get(chat_user_id)
+        list_chatted_user = []
 
-    if user:
-        chatted_user = db.session.query(ChattedUser).filter(
-            or_(
-                ChattedUser.sender_id == user_id,
-                ChattedUser.recipient_id == user_id
-            )
-        ).all()
-        # List of dictionaries with 'id', 'username', and 'public_key' attributes
-        for chat in chatted_user:
-            print("CHAT: ", chat)
-            # check if chatted user is sender_id or recipient_id is different from user_id. If yes, append that user to list_chatted_user
-            if chat.sender_id == user_id:
-                # Check if chat.recipient_id is already existing in list_chatted_user
-                if chat.recipient_id in [user['id'] for user in list_chatted_user]:
-                    continue
-                else:
-                    
-                    chat2 = db.session.query(ChattedUser).filter(ChattedUser.recipient_id == chat.sender_id, ChattedUser.sender_id == chat.recipient_id).first()
-                    chat_user = User.query.filter_by(id=chat.recipient_id).first()
-                    # Get the latest messages 
-                    message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp).first()
-                    if chat2: 
-                        message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp).first()
+        if user:
+            chatted_user = ChattedUser.query.filter(
+                or_(
+                    ChattedUser.sender_id == user_id,
+                    ChattedUser.recipient_id == user_id
+                )
+            ).all()
+            for chat in chatted_user:
+                if chat.sender_id == user_id:
+                    if chat.recipient_id in [user['id'] for user in list_chatted_user]:
+                        continue
+                    else:
+                        chat2 = ChattedUser.query.filter(
+                            ChattedUser.recipient_id == chat.sender_id,
+                            ChattedUser.sender_id == chat.recipient_id
+                        ).first()
+                        chat_user = User.query.get(chat.recipient_id)
+                        room = f'{min(user.id, chat_user.id)}-{max(user.id, chat_user.id)}'
+                        join_room(room)
+                        message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp.desc()).first()
 
-                        if message2:
-                            if message.timestamp >= message2.timestamp:
+                        if chat2:
+                            message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp.desc()).first()
+
+                            if message2 and message.timestamp >= message2.timestamp:
                                 dict_chat_user = {
                                     'id': chat_user.id,
                                     'username': chat_user.username,
                                     'public_key': chat_user.public_key,
                                     'last_message_id': message.id,
                                     'sender_id': chat.sender_id,
-                                    'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext
+                                    'timestamp': message.timestamp.isoformat(),
+                                    'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext,
                                 }
-
                             else:
-                                print("ENTERING 1st IF ELSE")
                                 dict_chat_user = {
                                     'id': chat_user.id,
                                     'username': chat_user.username,
                                     'public_key': chat_user.public_key,
                                     'last_message_id': message2.id,
                                     'sender_id': chat2.sender_id,
-                                    'message': message2.sender_ciphertext if chat2.sender_id == user.id else message2.receiver_ciphertext
+                                    'timestamp': message2.timestamp.isoformat(),
+                                    'message': message2.sender_ciphertext if chat2.sender_id == user.id else message2.receiver_ciphertext,
                                 }
-                            
-                            list_chatted_user.append(dict_chat_user)
                         else:
                             dict_chat_user = {
                                 'id': chat_user.id,
@@ -69,56 +74,46 @@ def handle_connect():
                                 'public_key': chat_user.public_key,
                                 'last_message_id': message.id,
                                 'sender_id': chat.sender_id,
-                                'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext
+                                'timestamp': message.timestamp.isoformat(),
+                                'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext,
                             }
-                        
-                            list_chatted_user.append(dict_chat_user)
-                    else:
-                        dict_chat_user = {
-                            'id': chat_user.id,
-                            'username': chat_user.username,
-                            'public_key': chat_user.public_key,
-                            'last_message_id': message.id,
-                            'sender_id': chat.sender_id,
-                            'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext
-                        }
-                    
                         list_chatted_user.append(dict_chat_user)
-            else:
-                if chat.sender_id in [user['id'] for user in list_chatted_user]:
-                    continue
                 else:
-                    chat2 = db.session.query(ChattedUser).filter(ChattedUser.recipient_id == chat.sender_id, ChattedUser.sender_id == chat.recipient_id).first()
-                    chat_user = User.query.filter_by(id=chat.sender_id).first()
-                    
-                    message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp).first()
-                    if chat2: 
-                        message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp).first()
+                    if chat.sender_id in [user['id'] for user in list_chatted_user]:
+                        continue
+                    else:
+                        chat2 = ChattedUser.query.filter(
+                            ChattedUser.recipient_id == chat.sender_id,
+                            ChattedUser.sender_id == chat.recipient_id
+                        ).first()
+                        chat_user = User.query.get(chat.sender_id)
+                        room = f'{min(user.id, chat_user.id)}-{max(user.id, chat_user.id)}'
+                        join_room(room)
+                        message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp.desc()).first()
 
-                        if message2:
-                            if message.timestamp >= message2.timestamp:
-                                print("ENTERING 2nd IF IF")
+                        if chat2:
+                            message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp.desc()).first()
+
+                            if message2 and message.timestamp >= message2.timestamp:
                                 dict_chat_user = {
                                     'id': chat_user.id,
                                     'username': chat_user.username,
                                     'public_key': chat_user.public_key,
                                     'last_message_id': message.id,
                                     'sender_id': chat.sender_id,
-                                    # 'message': message.receiver_ciphertext
-                                    'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext
+                                    'timestamp': message.timestamp.isoformat(),
+                                    'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext,
                                 }
                             else:
-                                print("ENTERING 2nd IF ELSE")
                                 dict_chat_user = {
                                     'id': chat_user.id,
                                     'username': chat_user.username,
                                     'public_key': chat_user.public_key,
                                     'last_message_id': message2.id,
                                     'sender_id': chat2.sender_id,
-                                    'message': message2.sender_ciphertext if chat2.sender_id == user.id else message2.receiver_ciphertext
+                                    'timestamp': message2.timestamp.isoformat(),
+                                    'message': message2.sender_ciphertext if chat2.sender_id == user.id else message2.receiver_ciphertext,
                                 }
-                        
-                            list_chatted_user.append(dict_chat_user)
                         else:
                             dict_chat_user = {
                                 'id': chat_user.id,
@@ -126,26 +121,86 @@ def handle_connect():
                                 'public_key': chat_user.public_key,
                                 'last_message_id': message.id,
                                 'sender_id': chat.sender_id,
-                                'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext
+                                'timestamp': message.timestamp.isoformat(),
+                                'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext,
                             }
-                        
-                            list_chatted_user.append(dict_chat_user)
-                    else:
-                        dict_chat_user = {
-                            'id': chat_user.id,
-                            'username': chat_user.username,
-                            'public_key': chat_user.public_key,
-                            'last_message_id': message.id,
-                            'sender_id': chat.sender_id,
-                            'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext
-                        }
-                    
                         list_chatted_user.append(dict_chat_user)
-            # print("LIST CHATTED USER: ", list_chatted_user)
 
-            # emit to chat_details
-        emit('chat_details', {'chat_user': list_chatted_user, 'user_id': user_id})
- 
+        if user and current_chat_user:
+            room = f'{min(user.id, current_chat_user.id)}-{max(user.id, current_chat_user.id)}'
+            join_room(room)
+            current_chat_public_key = current_chat_user.public_key
+            chat_history = retrieve_chat_history(user.id, current_chat_user.id)
+          
+            sort_chatted_user = sorted(list_chatted_user, key=lambda x: x['timestamp'], reverse=True)
+          
+            emit('chat_details', {
+                'current_chat_public_key': current_chat_public_key,
+                'current_chat_username': current_chat_user.username,
+                'chat_history': chat_history,
+                'chat_user': sort_chatted_user
+            })
+
+    else:
+        list_chatted_user = []
+        if user:
+            chatted_user = ChattedUser.query.filter(
+                or_(
+                    ChattedUser.sender_id == user_id,
+                    ChattedUser.recipient_id == user_id
+                )
+            ).all()
+            for chat in chatted_user:
+                if chat.sender_id == user_id:
+                    if chat.recipient_id in [user['id'] for user in list_chatted_user]:
+                        continue
+                    else:
+                        chat2 = ChattedUser.query.filter(
+                            ChattedUser.recipient_id == chat.sender_id,
+                            ChattedUser.sender_id == chat.recipient_id
+                        ).first()
+                        chat_user = User.query.get(chat.recipient_id)
+                        message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp.desc()).first()
+
+                        if chat2:
+                            message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp.desc()).first()
+
+                            if message2 and message.timestamp >= message2.timestamp:
+                                dict_chat_user = {
+                                    'id': chat_user.id,
+                                    'username': chat_user.username,
+                                    'public_key': chat_user.public_key,
+                                    'last_message_id': message.id,
+                                    'sender_id': chat.sender_id,
+                                    'timestamp': message.timestamp.isoformat(), 
+                                    'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext
+                                }
+                            else:
+                                dict_chat_user = {
+                                    'id': chat_user.id,
+                                    'username': chat_user.username,
+                                    'public_key': chat_user.public_key,
+                                    'last_message_id': message2.id,
+                                    'sender_id': chat2.sender_id,
+                                    'timestamp': message2.timestamp.isoformat(), 
+                                    'message': message2.sender_ciphertext if chat2.sender_id == user.id else message2.receiver_ciphertext
+                                }
+                        else:
+                            dict_chat_user = {
+                                'id': chat_user.id,
+                                'username': chat_user.username,
+                                'public_key': chat_user.public_key,
+                                'last_message_id': message.id,
+                                'sender_id': chat.sender_id,
+                                'timestamp': message.timestamp.isoformat(), 
+                                'message': message.sender_ciphertext if chat.sender_id == user.id else message.receiver_ciphertext,
+                                
+                            }
+                        list_chatted_user.append(dict_chat_user)
+            # Sort the list based on the timestamp in descending order
+            sort_chatted_user = sorted(list_chatted_user, key=lambda x: x['timestamp'], reverse=True)
+            emit('chat_details', {'chat_user': sort_chatted_user, 'user_id': user_id})
+
 
 # CONNECTED CHATS WITH USER ID
 # @socketio.on('connect')
@@ -228,7 +283,7 @@ def handle_new_message(data):
         # Emit the message to the chat room
         
         # print("messageDetails: ", messageDetails)
-        emit('message', {'sender': user_id, 'senderCipher': messageDetails.sender_ciphertext, 'receiverCipher': messageDetails.receiver_ciphertext}, room=room)
+        emit('message', {'sender': user_id, 'receiver': chatted_user.recipient_id, 'senderCipher': messageDetails.sender_ciphertext, 'receiverCipher': messageDetails.receiver_ciphertext}, room=room)
         
         
         
@@ -258,8 +313,8 @@ def handle_new_message(data):
 #                     chat2 = db.session.query(ChattedUser).filter(ChattedUser.recipient_id == chat.recipient_id, ChattedUser.sender_id == chat.sender_id).first()
 #                     chat_user = User.query.filter_by(id=chat.recipient_id).first()
 #                     # Get the latest messages 
-#                     message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp.desc()).first()
-#                     message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp.desc()).first()
+#                     message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp.desc().desc()).first()
+#                     message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp.desc().desc()).first()
                   
 #                     if message.timestamp >= message2.timestamp:
 #                         dict_chat_user = {
@@ -288,8 +343,8 @@ def handle_new_message(data):
 #                     chat2 = db.session.query(ChattedUser).filter(ChattedUser.recipient_id == chat.sender_id, ChattedUser.sender_id == chat.recipient_id).first()
 #                     chat_user = User.query.filter_by(id=chat.sender_id).first()
                     
-#                     message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp.desc()).first()
-#                     message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp.desc()).first()
+#                     message = Messages.query.filter_by(chatted_id=chat.id).order_by(Messages.timestamp.desc().desc()).first()
+#                     message2 = Messages.query.filter_by(chatted_id=chat2.id).order_by(Messages.timestamp.desc().desc()).first()
                     
 #                     if message.timestamp >= message2.timestamp:
 #                         dict_chat_user = {

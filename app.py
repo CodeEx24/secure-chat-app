@@ -108,11 +108,13 @@ def create_app():
         
     # Define the chat route
     @app.route('/chat/<int:id>')
+    @userRequired
     def chat(id):
         # Your chat logic goes here
         private_key=session['private_key']
         public_key=session['public_key']
-        return render_template('pages/chat.html', id=id, private_key=private_key, public_key=public_key)
+        user_id = session['user_id']
+        return render_template('pages/chat.html', id=id, private_key=private_key, public_key=public_key, user_id=user_id)
 
     if __name__ == '__main__':
         app.run(debug=True)
