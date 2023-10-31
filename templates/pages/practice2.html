@@ -1,70 +1,67 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Decrypt Private Key</title>
+    <title>Sample Conversation Page</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .conversation {
+        width: 400px;
+        height: 300px;
+        border: 1px solid #ccc;
+        overflow-y: scroll;
+      }
+      .message {
+        padding: 10px;
+        margin: 5px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+      }
+      .scroll-button {
+        margin-top: 10px;
+        cursor: pointer;
+        padding: 5px 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+      }
+    </style>
   </head>
   <body>
+    <h1>Sample Conversation</h1>
+    <div class="conversation" id="conversation">
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <div class="message">User: Hello there!</div>
+      <div class="message">Bot: Hi! How can I assist you today?</div>
+      <!-- Add more messages here -->
+    </div>
+    <button class="scroll-button" onclick="scrollToBottom()">
+      Scroll to Bottom
+    </button>
+
     <script>
-      // Replace these with your actual values
-      var encryptedPrivateKeyStr =
-        '\x674141414141426c4d533775496876336e786a644d3354537267457941334a707a7865354b6357364678515f344d4b5a714542724f74674c386b367156534d594771756259306e353446524e695761334d71763347526241353545435a31646542774d4369767355355a4d685f5262314173576146643051465f395343557a7872497849435f6d712d4134455054567279753933757044547136346f674c337a664d4e746e50764b353274482d4c36475f74635163594e6e5f4f6244644861786a4f6658624c385a4c44525731703230666e38334a506f41594a65684a62786a6e7139356475465274335f7943374d77452d7845776338354f6a496d413267693158374e6f7076674c3978776b76766d4c6862704e794f76556a7957386257367a4155624a74504b3258477238656f6a746f494136733653657547774e4931686479736e4179584149717969366744726b6e5279516a4d61695972497646536a75454e6b4365594f4270504a686f6d372d702d4b635a4f464333704d5f703231734163396c3951414a6c303072666948417174535a444244586a784b6c5163457a4e774a326b736831435f666b6f6e726e5369324d6f776478457739666f345556527153726373477466564c58794b356b65676767444b2d70497869706554756e6255346d385259737477796a716d79684b39582d7544634a475f74356a366f712d32376f663352786b7a756e395636544e6b6c6e626845316d7543717032446c373168713463496144346a5048516f386c68624a63684763327437326243767a6b5775357678436d4c5a5a564946667541384a334b794c56653730716837574438485956595a714746375a6450622d745a38326c6e567162302d6933754576707974445938586f6a4c7a4c76505a746a51626f594b587349475f49646358794154626262396172353551774c72464f36697a67577a4c5a316853497942565a514f6b5f7236734b7a79454d375a4272524c64786a505171556250556666586e6974626d7a597542304d375f6968354147756a4b35795058646f346934533666654533382d384f56733147496e4d6a69354c70376357304f5f66476537525354714177686159334847646e50567854595438644c766432357a3038515168554c56625a6e684a5f6763656b47715068304c595373424a55482d674776786b52364e346f725a4154385a697944474646626572505462444572334846656257337532647939737062544c7a4570726476504a4149506a677143453967375a6770664553497a70773863447637396874783559305a76425548336e3434304f505031434a52796b6e707975787a395044355933766e323653796341416c633341473356674e41694271674453504e494535744d556f2d6e5f5a6e66384c7a6d7465483871456172757a755f38306a56785057316476307646357342757037574862684443512d504b6a7467513875616a6f5f43334b6d4d476d484747687677547a334a764c4c5a776171676d4e4b64675953416f7379546662523542537375396f7835775f6a484252707530454858636373304e513867326c374d4f5a432d367a716c6f627355637278426f46766b77656d6f615634414e65662d71794a314274786a4c4b7838386935654833797449754664475f4775673338436551654b71514d6f6b67747667656b68653869303869486762394d69384f34796c44786b506c2d2d7857395a6574665a666e4c57625841484f673470374d6878416f4d68743054573330302d447a3158305f624a674238654a48334e7a615a5263354778594852565269317271314f646b755f50675a39564f6b695f4b726c636d6155696670555a546c694b4c5f79457354526a4b30725041415137486d65637335396b6a68426f65784f7054703476794e6c445f724856724c4675544d41494833676a37776c2d4241334a6e52485a47624c317750676a7a50574451726a48743146466a703564784f6b527963737a796131534e316f4d4f7156704c59657837633679527645592d73676a4c3436446a3853553647635f7a776464703433666f7459643851695767524d496573623072426b4f6148657a385068694179746d7a30526868302d76565369456958796850447456687a6f63703644384a785f7153655a72334f4e2d4532716c774336466467324e6c2d6f4651396b4e49424b7955336b6f463076354c6252436f4c4f3136724439777a6151374463395568556d477531325a5a336c7a4d32475a5466724e5039315667384d7165717a47536952723353747532684b47314b3537596f6445476b41694a334361397954794f61467553705f5f3953532d4764624c38616579586230566a57324e304e6b73617478664268566458774464757a70376b48517a71644a6f3158315965724264714654365958325676594d466f6d376f4631474b6c3531745a61585569454863424e764b6433696545666e6c546257747036527167517153776f39344f56356c356270635f6d473668773942664f59547157414e5f39334a663650624e7673776e43306872444d4a6c5375626975566a63624e374235515967556e363761745053687a625574675245745a353739427450506c32303443737a485779566a5337326e544b51744835316d50654a5f4e3867316653676341307772435279786b5043594d48453751634f466f6a414b3370504432556444724e4d31646a554d39685666514e524a344b424f3131575972676d754632714c4c71717a514639767872345368703136324f364879454f4c49693362366b642d51534f4a36435064446f7950315a6e70727778736761776f5a416a30574f345a32636e4f7579626b6b466b73745552566631416635485a774c455135744b7934506d342d6f4a7433645a426b3965353737337358354d384c6638437a536b37442d647a6f6d4737436437564a62454972506a35566d62594d65446f2d61473770456c766f462d586f756e72416e4143625a49784c7851577a5f5144724d4857706e2d633867373971656272324b5776715653694144336e56587448706933436d4e6c47327a6b414b473735704d4d617742723735775a77694e7964642d705554693148773836492d6d6363657a33544752475051376f4265543269355f4531463059445a3366664846715a3544356e687567445f334f44536964615736533777';
-      var fernetKeyStr =
-        'ee0c60c484070be9d6d8c4afecf46a6b4df951b6d985c605d4521be0b1d91a95';
-      // Custom base64url decoding function
-      function base64urlDecode(input) {
-        const padding = '='.repeat((4 - (input.length % 4)) % 4);
-        const base64 = (input + padding).replace(/-/g, '+').replace(/_/g, '/');
-        const rawData = atob(base64);
-        const output = new Uint8Array(rawData.length);
-
-        for (let i = 0; i < rawData.length; i++) {
-          output[i] = rawData.charCodeAt(i);
-        }
-
-        return output;
-      }
-
-      // Convert Fernet key from string to bytes
-      var fernetKey = base64urlDecode(fernetKeyStr);
-
-      // Convert the encrypted private key from string to bytes
-      var encryptedPrivateKey = base64urlDecode(encryptedPrivateKeyStr);
-
-      // Decrypt the private key
-      var decryptedPrivateKey = decryptPrivateKey(
-        encryptedPrivateKey,
-        fernetKey
-      );
-
-      // Now you can use the decryptedPrivateKey for further processing
-      console.log(decryptedPrivateKey);
-
-      // Define the decryptPrivateKey function using the WebCrypto API (Fernet decryption)
-      async function decryptPrivateKey(encryptedPrivateKey, fernetKey) {
-        try {
-          const decodedEncryptedKey = new TextDecoder().decode(
-            encryptedPrivateKey
-          );
-
-          // Use WebCrypto API for Fernet decryption
-          const key = await crypto.subtle.importKey(
-            'raw',
-            fernetKey,
-            { name: 'AES-CFB' },
-            false,
-            ['decrypt']
-          );
-          const decryptedBuffer = await crypto.subtle.decrypt(
-            { name: 'AES-CFB', iv: new ArrayBuffer(16) },
-            key,
-            new TextEncoder().encode(decodedEncryptedKey)
-          );
-          const decryptedPrivateKey = new TextDecoder().decode(decryptedBuffer);
-
-          return decryptedPrivateKey;
-        } catch (error) {
-          console.error('Error decrypting private key: ', error);
-        }
+      function scrollToBottom() {
+        var conversation = document.getElementById('conversation');
+        conversation.scrollTop = conversation.scrollHeight;
       }
     </script>
   </body>

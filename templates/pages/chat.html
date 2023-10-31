@@ -335,9 +335,6 @@
 {% block script %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
 
-<!-- Scroll to bottom -->
-<script></script>
-
 <!-- Menu button dropdown (Header) -->
 <!-- SEND MESSAGES TRIGGER ON ENTER -->
 <script>
@@ -370,14 +367,13 @@
     });
 
   // Scroll at the bottom
-  const chatMessages = document.querySelector('.message-bottom');
+  const chatMessages = document.getElementById('chat-container');
 
   // Scroll to the end of the chat messages
   function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    console.log('SCROLL TO THE BOTTOM');
   }
-
-  scrollToBottom();
 </script>
 
 <!-- SEARCH FUNCTIONS FETCH -->
@@ -503,57 +499,113 @@
   });
 </script>
 
+<script>
+  let publicKey;
+  let privateKey;
+  let recipientPublicKey;
+
+  // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
+  let publicKeyStr = document.getElementById('publicKey').value;
+  let privateKeyStr = document.getElementById('privateKey').value;
+
+  ForgeKeys();
+  function ForgeKeys() {
+    publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
+    privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
+  }
+
+  function encryptMessage(key, message) {
+    const encryptedMessage = key.encrypt(forge.util.encodeUtf8(message));
+    const base64EncryptedMessage = forge.util.encode64(encryptedMessage);
+    return base64EncryptedMessage;
+  }
+
+  function decryptMessage(message) {
+    const encryptedMessage = forge.util.decode64(message);
+    const decryptedMessage = privateKey.decrypt(encryptedMessage);
+
+    return decryptedMessage;
+  }
+</script>
+
 <!-- Send Message Function -->
 <script>
   function sendMessage() {
     const messageInput = document.getElementById('message-input');
     const message = messageInput.value;
     if (message) {
-      console.log('MESSAGE: ', message);
-      encryptMessage(message);
+      const senderEncryptedMessage = encryptMessage(publicKey, message);
+      const receiverEncryptedMessage = encryptMessage(
+        recipientPublicKey,
+        message
+      );
 
       socket.emit('send_message', {
-        message: message,
+        // message: message,
+        senderEncryptedMessage: senderEncryptedMessage,
+        receiverEncryptedMessage: receiverEncryptedMessage,
       });
       messageInput.value = '';
     }
   }
 </script>
 
-<!-- Chat History -->
+<!-- EMITTING THE SOCKET -->
 <script>
-  socket.on('chat_history', (chatHistory) => {
-    const chatContainer = document.getElementById('chat-container');
-    chatContainer.innerHTML = ''; // Clear existing chat history
-    chatHistory.forEach((message) => {
-      const messageItem = document.createElement('li');
-      messageItem.innerHTML = `${message.sender} (${message.timestamp}): ${message.message}`;
-      chatContainer.appendChild(messageItem);
-    });
-  });
-
   socket.on('message', function (data) {
-    console.log('DATA SENDER: ', data);
-    console.log('RECEIVER: ', userReceiverId);
+    console.log('DATA SENDER: ', data.sender);
+    // console.log('RECEIVER: ', userReceiverId);
     const chatContainer = document.getElementById('chat-container');
 
     if (data.sender == userReceiverId) {
-      // Handle incoming messages from the recipient
-      console.log('TRUE');
-      const incomingMessageContainer = createIncomingMessageContainer(
-        data.message
-      );
+      // Handle outgoing messages from the current user
+      const decryptedMessage = decryptMessage(data.receiverCipher);
+
+      const incomingMessageContainer =
+        createIncomingMessageContainer(decryptedMessage);
       chatContainer.appendChild(incomingMessageContainer);
     } else {
-      console.log('ELSE');
       // Handle outgoing messages from the current user
-      const outgoingMessageContainer = createOutgoingMessageContainer(
-        data.message
-      );
+      const decryptedMessage = decryptMessage(data.senderCipher);
+      const outgoingMessageContainer =
+        createOutgoingMessageContainer(decryptedMessage);
       chatContainer.appendChild(outgoingMessageContainer);
     }
+    scrollToBottom();
   });
 
+  // On connect it will get the current user public key
+  socket.on('chat_details', (data) => {
+    console.log(data);
+    recipientPublicKey = forge.pki.publicKeyFromPem(data.chat_user_public_key);
+
+    console.log('EMITTED IN CHAT HISTORY');
+    const chatContainer = document.getElementById('chat-container');
+    chatContainer.innerHTML = ''; // Clear existing chat history
+    data.chat_history.forEach(function (message) {
+      if (message.sender == userReceiverId) {
+        // Handle outgoing messages from the current user
+        const decryptedMessage = decryptMessage(message.cipher);
+
+        const incomingMessageContainer =
+          createIncomingMessageContainer(decryptedMessage);
+        chatContainer.appendChild(incomingMessageContainer);
+      } else {
+        // Handle outgoing messages from the current user
+        const decryptedMessage = decryptMessage(message.cipher);
+        const outgoingMessageContainer =
+          createOutgoingMessageContainer(decryptedMessage);
+        chatContainer.appendChild(outgoingMessageContainer);
+      }
+    });
+    setTimeout(() => {
+      scrollToBottom();
+    }, 10); // Adjust the delay as needed
+  });
+</script>
+
+<!-- OUTGOING AND INCOMING MESSAGE CONTAINER -->
+<script>
   // Function to create an outgoing message container
   function createOutgoingMessageContainer(messageText) {
     const messageContainer = document.createElement('div');
@@ -649,45 +701,6 @@
     incomingMessageContainer.appendChild(messageContent);
 
     return incomingMessageContainer;
-  }
-</script>
-
-<script>
-  let publicKey;
-  let privateKey;
-
-  // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
-  let publicKeyStr = document.getElementById('publicKey').value;
-  let privateKeyStr = document.getElementById('privateKey').value;
-
-  ForgeKeys();
-
-  function ForgeKeys() {
-    publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
-    privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
-  }
-
-  function encryptMessage(message) {
-    // Ensure publicKey is a valid Forge.js public key
-    const encryptedMessage = publicKey.encrypt(forge.util.encodeUtf8(message));
-    console.log('encryptedMessage: ', encryptedMessage);
-    const base64EncryptedMessage = forge.util.encode64(encryptedMessage);
-
-    console.log('base64EncryptedMessage: ', base64EncryptedMessage);
-    decryptMessage(base64EncryptedMessage);
-  }
-
-  function decryptMessage(message) {
-    const encryptedMessage = forge.util.decode64(message);
-
-    try {
-      const decryptedMessage = privateKey.decrypt(encryptedMessage);
-      console.log('decryptedMessage: ', decryptedMessage);
-      // document.getElementById('decryptedMessage').textContent =
-      //   forge.util.decodeUtf8(decryptedMessage);
-    } catch (error) {
-      console.log('Something went wrong.');
-    }
   }
 </script>
 

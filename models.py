@@ -28,7 +28,8 @@ class Messages(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     chatted_id = db.Column(db.Integer, db.ForeignKey('ChattedUser.id'), nullable=False)
     timestamp = db.Column(db.DateTime)
-    ciphertext = db.Column(db.String, nullable=False)
+    sender_ciphertext = db.Column(db.String, nullable=False)
+    receiver_ciphertext = db.Column(db.String, nullable=False)
         
 class ChattedUser(db.Model):
     __tablename__ = 'ChattedUser'

@@ -47,6 +47,8 @@
           id="menuDropdown"
           class="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg hidden"
         >
+          <input type="hidden" id="publicKey" value="{{ public_key }}" />
+          <input type="hidden" id="privateKey" value="{{ private_key }}" />
           <ul class="py-2 px-3">
             <li>
               <a
@@ -89,245 +91,34 @@
     </header>
 
     <!-- Contact List -->
-    <div class="overflow-y-auto h-screen mb-9 pb-20 bg-dark-2">
-      <div
-        class="flex items-center cursor-pointer hover:bg-dark-3 p-4 bg-active"
-      >
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Alice</h2>
-          <p class="text-light-2 text-sm line-clamp-1">Hoorayy!!</p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/ad922e/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Martin</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            That pizza place was amazing! We should go again sometime. 🍕
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/2e83ad/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Charlie</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            Hey, do you have any recommendations for a good movie to watch?
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/c2ebff/0f0b14.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">David</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            I just finished reading a great book! It was so captivating.
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/e7c2ff/7315d1.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Ella</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            What's the plan for this weekend? Anything fun?
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/ffc2e2/ffdbdb.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Fiona</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            I heard there's a new exhibit at the art museum. Interested?
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/f83f3f/4f4f4f.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">George</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            I tried that new cafe downtown. The coffee was fantastic!
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/dddddd/999999.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Hannah</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            I'm planning a hiking trip next month. Want to join?
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/70ff33/501616.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Ian</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            Let's catch up soon. It's been too long!
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Jack</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            Remember that hilarious joke you told me? I can't stop laughing!
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">Jack</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            Remember that hilarious joke you told me? I can't stop laughing!
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            src="https://placehold.co/200x/30916c/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg text-light-1 font-inter">HELLO</h2>
-          <p class="text-light-2 text-sm line-clamp-1">
-            Remember that hilarious joke you told me? I can't stop laughing!
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+    <div
+      class="overflow-y-auto h-screen mb-9 pb-20 bg-dark-2"
+      id="chat-user-container"
+    >
+      <!-- <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
         <div class="w-12 h-12 bg-gray-300 rounded-full mr-3"></div>
-      </div>
+      </div> -->
     </div>
   </div>
 
   <!-- Main Chat Area -->
   <div class="flex-1">
-    <!-- Chat Header -->
-    <header class="bg-dark-2 p-6 text-gray-700 h-20 text-light-1">
-      HEADER HERE
-    </header>
-
     <!-- Chat Messages CHART CONTAINER-->
     <div
       id="chat-container"
-      class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom"
+      class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom flex justify-center items-center"
     >
-      <p class="text-light-1">THIS IS CHART CONTAINER</p>
+      <p class="text-light-1 p-2 bg-dark-3 rounded-lg">
+        Select or search a user to start messaging
+      </p>
     </div>
-
-    <!-- Chat Input -->
-    <footer
-      class="bg-dark-3 border-t border-gray-700 p-4 absolute bottom-0 w-3/4"
-    >
-      <div class="flex items-center">
-        <input
-          type="text"
-          id="message"
-          placeholder="Type a message..."
-          class="w-full p-2 text-light-1 bg-dark-4 rounded-md border border-gray-800 focus:outline-none focus:border-blue-500"
-        />
-        <button
-          class="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2"
-          onclick="sendMessage()"
-        >
-          Send
-        </button>
-      </div>
-    </footer>
   </div>
 </div>
 {% endblock content %}
 
 <!-- SCRIPTS -->
 {% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
 <!-- Scroll to bottom -->
 <script>
   // Get the chat messages container
@@ -484,7 +275,7 @@
 
   // I want to get the connect data here
   socket.on('connect', () => {
-    console.log('connected');
+    console.log('HELLO');
   });
 
   const chatContainer = document.getElementById('chat-container');
@@ -505,6 +296,97 @@
     });
   }
 
-  //
+  // On connect, it will get the current user public key
+  socket.on('chat_details', (data) => {
+    console.log(data.chat_user);
+    const chatUserContainer = document.getElementById('chat-user-container'); // Replace 'chat-user-container' with the ID of your container element
+
+    data.chat_user.forEach((chat) => {
+      // Create the HTML structure for each chat user
+      const chatUserDiv = document.createElement('div');
+      chatUserDiv.classList.add(
+        'flex',
+        'items-center',
+        'cursor-pointer',
+        'hover:bg-dark-3',
+        'p-4',
+        'bg-active'
+      );
+
+      const avatarDiv = document.createElement('div');
+      avatarDiv.classList.add(
+        'w-12',
+        'h-12',
+        'bg-gray-300',
+        'rounded-full',
+        'mr-3'
+      );
+      const avatarImg = document.createElement('img');
+      avatarImg.src =
+        'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'; // Replace with the absolute image URL
+      avatarImg.alt = 'User Avatar';
+      avatarImg.classList.add('w-12', 'h-12', 'rounded-full');
+
+      avatarDiv.appendChild(avatarImg);
+
+      const contentDiv = document.createElement('div');
+      contentDiv.classList.add('flex-1');
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('flex');
+      const usernameH2 = document.createElement('h2');
+      usernameH2.classList.add('text-lg', 'text-light-1', 'font-inter');
+      usernameH2.textContent = chat.username;
+      // Check if data.user_id is equal to chat.sender_id then add "You: " at the start of the message in which you is span and the bold
+      const messageContainer = document.createElement('div');
+      messageContainer.classList.add('flex', 'gap-2', 'items-center');
+
+      if (data.user_id == chat.sender_id) {
+        const span = document.createElement('span');
+        span.classList.add('font-black', 'text-sm', 'text-light-2');
+        span.innerHTML = 'You:&nbsp;';
+        messageDiv.appendChild(span);
+      }
+
+      const messageP = document.createElement('p');
+      messageP.classList.add('text-light-2', 'text-sm', 'line-clamp-1');
+
+      messageP.textContent = decryptMessage(chat.message);
+
+      messageDiv.appendChild(messageP);
+
+      contentDiv.appendChild(usernameH2);
+      contentDiv.appendChild(messageDiv);
+      chatUserDiv.appendChild(avatarDiv);
+      chatUserDiv.appendChild(contentDiv);
+
+      // Append the chat user HTML to the container
+      chatUserContainer.appendChild(chatUserDiv);
+    });
+  });
+</script>
+
+<script>
+  let publicKey;
+  let privateKey;
+  let recipientPublicKey;
+
+  // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
+  let publicKeyStr = document.getElementById('publicKey').value;
+  let privateKeyStr = document.getElementById('privateKey').value;
+
+  ForgeKeys();
+  function ForgeKeys() {
+    publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
+    privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
+  }
+</script>
+
+<script>
+  function decryptMessage(message) {
+    const encryptedMessage = forge.util.decode64(message);
+    const decryptedMessage = privateKey.decrypt(encryptedMessage);
+
+    return decryptedMessage;
+  }
 </script>
 {% endblock script %}

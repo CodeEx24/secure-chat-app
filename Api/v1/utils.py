@@ -8,13 +8,15 @@ import secrets
 from datetime import datetime, timedelta
 from flask_mail import Message
 from mail import mail  # Import mail from the mail.py module
-from flask import url_for, session
+from flask import url_for, session, jsonify
 import re  # Import the re module for regular expressions
 from werkzeug.security import check_password_hash
 import hashlib
 import base64
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
+from sqlalchemy import or_
+
 # Generate public and private keys for a user (you would typically do this during user registration)
 def generate_key_pair():
     key = RSA.generate(2048)  # Adjust key size as needed
@@ -358,13 +360,40 @@ def retrieve_chat_history(sender_id, recipient_id):
 
     # The current user chatting with for example username 3
     userSendMessages = db.session.query(
-                ChattedUser).filter(ChattedUser.sender_id == sender_id, ChattedUser.recipient_id == recipient_id).all()
-    userRecieveMessages = db.session.query(
-                ChattedUser).filter(ChattedUser.sender_id == recipient_id, ChattedUser.recipient_id == sender_id).all()
+                ChattedUser).filter(ChattedUser.sender_id == sender_id, ChattedUser.recipient_id == recipient_id).first()
+    userReceiveMessages = db.session.query(
+                ChattedUser).filter(ChattedUser.sender_id == recipient_id, ChattedUser.recipient_id == sender_id).first()
     
-    if userSendMessages and userRecieveMessages:
+    if userSendMessages and userReceiveMessages:
         print("userSendMessages: ", userSendMessages)
-        print("userRecieveMessages: ", userRecieveMessages)
+        print("userReceiveMessages: ", userReceiveMessages)
+        # Retrive the message in which chatted id is either of the two userSendMessages.id and userReceiveMessages.id
+        sendChatHistory = db.session.query(Messages).filter(
+            or_(
+                Messages.chatted_id == userSendMessages.id,
+                Messages.chatted_id == userReceiveMessages.id
+            )
+        ).order_by(Messages.timestamp).limit(50)
+        
+        list_chat_history = []
+        
+        for message in sendChatHistory:
+            if message.chatted_id == userSendMessages.id:
+                data ={
+                    'sender': sender_id,
+                    'cipher': message.sender_ciphertext,
+                }
+            else:
+                data ={
+                    'sender': recipient_id,
+                    'cipher': message.receiver_ciphertext,
+                }
+            
+            list_chat_history.append(data)
+        return list_chat_history
+
+        
+        
     #     sendChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userSendMessages.id)
     #     recieveChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userRecieveMessages.id)
         
