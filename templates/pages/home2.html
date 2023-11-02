@@ -1,0 +1,391 @@
+{% extends "base/layout.html" %}
+
+<!-- TITLE -->
+{% block title %} {% endblock title %}
+
+<!-- CONTENT -->
+{% block content %}
+<script
+  src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+  integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+  crossorigin="anonymous"
+></script>
+
+<div class="flex h-screen overflow-hidden">
+  <!-- Sidebar -->
+  <div class="w-1/4 bg-white border-r border-gray-700">
+    <!-- Sidebar Header -->
+    <header
+      class="p-6 h-20 border-b border-gray-700 flex justify-between items-center bg-dark-2 text-white"
+    >
+      <div class="relative">
+        <!-- <button
+          class="flex items-center justify-center w-8 h-8 p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:bg-gray-300 transition duration-300"
+        ></button> -->
+        <button
+          id="menuButton"
+          class="focus:outline-none flex items-center justify-center w-8 h-8 p-2 rounded-md focus:outline-none transition duration-300"
+        >
+          <span class="sr-only">Open menu</span>
+          <svg
+            class="w-4 h-4 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
+          </svg>
+        </button>
+        <!-- Menu Dropdown -->
+        <div
+          id="menuDropdown"
+          class="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg hidden"
+        >
+          <input type="hidden" id="publicKey" value="{{ public_key }}" />
+          <input type="hidden" id="privateKey" value="{{ private_key }}" />
+          <ul class="py-2 px-3">
+            <li>
+              <a
+                href="#"
+                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
+                >Profile</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
+                >Account Settings</a
+              >
+            </li>
+            <li>
+              <a
+                href="{{ url_for('logout') }}"
+                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
+                >Logout</a
+              >
+            </li>
+            <!-- Add more menu options here -->
+          </ul>
+        </div>
+      </div>
+      <div class="flex items-center justify-center">
+        <input
+          id="searchInput"
+          type="text"
+          class="px-4 py-1 bg-dark-3 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Search..."
+        />
+        <div
+          class="search-results-dropdown hidden absolute top-16 left-40 bg-white border border-light-3 shadow-md max-h-40 z-50 w-72 rounded-lg"
+        >
+          <!-- Search result items will be appended here -->
+        </div>
+      </div>
+    </header>
+
+    <!-- Contact List -->
+    <div
+      class="overflow-y-auto h-screen mb-9 pb-20 bg-dark-2"
+      id="chat-user-container"
+    >
+      <!-- <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3"></div>
+      </div> -->
+    </div>
+  </div>
+
+  <!-- Main Chat Area -->
+  <div class="flex-1">
+    <!-- Chat Messages CHART CONTAINER-->
+    <div
+      id="chat-container"
+      class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom flex justify-center items-center"
+    >
+      <p class="text-light-1 p-2 bg-dark-3 rounded-lg">
+        Select or search a user to start messaging
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+<!-- SCRIPTS -->
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
+<!-- Scroll to bottom -->
+<script>
+  // Get the chat messages container
+  const chatMessages = document.querySelector('.message-bottom');
+
+  // Scroll to the end of the chat messages
+  function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  scrollToBottom();
+</script>
+
+<!-- Menu button dropdown (Header) -->
+<script>
+  // JavaScript for showing/hiding the menu
+  const menuButton = document.getElementById('menuButton');
+  const menuDropdown = document.getElementById('menuDropdown');
+
+  menuButton.addEventListener('click', () => {
+    if (menuDropdown.classList.contains('hidden')) {
+      menuDropdown.classList.remove('hidden');
+    } else {
+      menuDropdown.classList.add('hidden');
+    }
+  });
+
+  // Close the menu if you click outside of it
+  document.addEventListener('click', (e) => {
+    if (!menuDropdown.contains(e.target) && !menuButton.contains(e.target)) {
+      menuDropdown.classList.add('hidden');
+    }
+  });
+</script>
+
+<!-- Variables -->
+<script>
+  const currentChatId = 0;
+  const currentPublicKey = '';
+</script>
+
+<!-- SEARCH FUNCTIONS FETCH -->
+<script>
+  // Get the search input and search results container
+  const searchInput = document.getElementById('searchInput');
+  const searchResultsDropdown = document.querySelector(
+    '.search-results-dropdown'
+  );
+  // Construct the base URL with the '/api/v1' prefix
+  const baseUrl = "{{ url_for('chat_app_api.searchUsers') }}";
+
+  // Function to make a request to the server with the user's input
+  function searchUsers(query) {
+    // Combine the base URL with the query parameter
+    const apiUrl = baseUrl + `?query=${query}`;
+    fetch(apiUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        // Clear previous search results
+        searchResultsDropdown.innerHTML = '';
+
+        if (data.result) {
+          // Loop through the search results and render them
+          data.result.forEach((result) => {
+            const resultElement = document.createElement('a');
+            resultElement.href = `/api/v1/${result.username}`;
+            resultElement.className =
+              'bg-dark-3 w-full px-4 py-2 flex gap-4 border-b border-gray-800';
+
+            // Create and append the child elements with your specified structure
+            const imgElement = document.createElement('img');
+            imgElement.src =
+              'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+            imgElement.alt = 'User Avatar';
+            imgElement.className = 'w-12 h-12 rounded-full';
+
+            const userTextElement = document.createElement('div');
+
+            const userNameElement = document.createElement('h2');
+            userNameElement.className = 'text-lg text-light-1 font-inter';
+            userNameElement.textContent = `@${result.username}`;
+
+            const userDescriptionElement = document.createElement('p');
+            userDescriptionElement.className =
+              'text-light-2 text-sm line-clamp-1';
+            userDescriptionElement.textContent = 'Hoorayy!!';
+
+            // Append child elements to resultElement
+            userTextElement.appendChild(userNameElement);
+            userTextElement.appendChild(userDescriptionElement);
+
+            resultElement.appendChild(imgElement);
+            resultElement.appendChild(userTextElement);
+
+            // Append the resultElement to searchResultsDropdown
+            searchResultsDropdown.appendChild(resultElement);
+          });
+        } else {
+          // Create a message element for no results
+          const noResultsMessage = document.createElement('div');
+          noResultsMessage.className = 'bg-dark-3 w-full px-4 py-4 flex gap-4';
+          noResultsMessage.textContent = 'No Users Found';
+
+          // Append the message to searchResultsDropdown
+          searchResultsDropdown.appendChild(noResultsMessage);
+        }
+
+        // Show the search results container
+        searchResultsDropdown.classList.remove('hidden');
+      })
+      .catch((error) => {
+        console.error('Error fetching search results:', error);
+      });
+  }
+
+  // Handle input events in the search input (for real-time search)
+  searchInput.addEventListener('input', (event) => {
+    const query = searchInput.value.trim();
+
+    if (query.length > 0) {
+      searchUsers(query);
+    } else {
+      // If the search input is empty, hide the search results
+      searchResultsDropdown.innerHTML = '';
+      searchResultsDropdown.classList.add('hidden');
+    }
+  });
+
+  // Close the search results when clicking outside the search input and results container
+  document.addEventListener('click', (e) => {
+    if (
+      !searchInput.contains(e.target) &&
+      !searchResultsDropdown.contains(e.target)
+    ) {
+      searchResultsDropdown.innerHTML = '';
+      searchResultsDropdown.classList.add('hidden');
+    }
+  });
+
+  // Function to handle the focus event on the search input
+  searchInput.addEventListener('focus', (event) => {
+    // Check if the input is not empty and trigger the search again
+    const query = searchInput.value.trim();
+
+    if (query.length > 0) {
+      searchUsers(query);
+    }
+  });
+</script>
+
+<!-- SOCKETIO -->
+<script>
+  const socket = io();
+
+  // I want to get the connect data here
+  socket.on('connect', () => {
+    console.log('HELLO');
+  });
+
+  const chatContainer = document.getElementById('chat-container');
+  // Get the last ellement in my url
+  const url = window.location.href;
+  const urlArray = url.split('/');
+  const receiver_username = urlArray[urlArray.length - 1];
+
+  function sendMessage() {
+    // Get the message value and chat container
+    const message = document.getElementById('message').value;
+    console.log('message: ', message);
+    console.log('reciever_username: ', receiver_username);
+    // Send the message and reciever username
+    socket.emit('send_message', {
+      message: message,
+      receiver_username: receiver_username,
+    });
+  }
+  // On connect, it will get the current user public key
+  socket.on('chat_details', (data) => {
+    console.log(data.chat_user);
+    const chatUserContainer = document.getElementById('chat-user-container'); // Replace 'chat-user-container' with the ID of your container element
+
+    data.chat_user.forEach((chat) => {
+      // Create the HTML structure for each chat user
+      const chatUserLink = document.createElement('a'); // Wrap the div in an anchor tag
+      chatUserLink.href = `/chat/${chat.id}`; // Set the link's URL based on chat.id
+      chatUserLink.classList.add(
+        'flex',
+        'items-center',
+        'cursor-pointer',
+        'hover:bg-dark-3',
+        'p-4',
+        'bg-active'
+      );
+
+      const avatarDiv = document.createElement('div');
+      avatarDiv.classList.add(
+        'w-12',
+        'h-12',
+        'bg-gray-300',
+        'rounded-full',
+        'mr-3'
+      );
+      const avatarImg = document.createElement('img');
+      avatarImg.src =
+        'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'; // Replace with the absolute image URL
+      avatarImg.alt = 'User Avatar';
+      avatarImg.classList.add('w-12', 'h-12', 'rounded-full');
+
+      avatarDiv.appendChild(avatarImg);
+
+      const contentDiv = document.createElement('div');
+      contentDiv.classList.add('flex-1');
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('flex');
+      const usernameH2 = document.createElement('h2');
+      usernameH2.classList.add('text-lg', 'text-light-1', 'font-inter');
+      usernameH2.textContent = chat.username;
+      // Check if data.user_id is equal to chat.sender_id, then add "You: " at the start of the message in which 'You' is inside a <span> tag and bold
+      const messageContainer = document.createElement('div');
+      messageContainer.classList.add('flex', 'gap-2', 'items-center');
+
+      if (data.user_id == chat.sender_id) {
+        const span = document.createElement('span');
+        span.classList.add('font-black', 'text-sm', 'text-light-2');
+        span.innerHTML = 'You:&nbsp;';
+        messageDiv.appendChild(span);
+      }
+
+      const messageP = document.createElement('p');
+      messageP.classList.add('text-light-2', 'text-sm', 'line-clamp-1');
+      messageP.textContent = decryptMessage(chat.message);
+
+      messageDiv.appendChild(messageP);
+
+      contentDiv.appendChild(usernameH2);
+      contentDiv.appendChild(messageDiv);
+      chatUserLink.appendChild(avatarDiv);
+      chatUserLink.appendChild(contentDiv);
+
+      // Append the chat user link to the container
+      chatUserContainer.appendChild(chatUserLink);
+    });
+  });
+</script>
+
+<script>
+  let publicKey;
+  let privateKey;
+  let recipientPublicKey;
+
+  // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
+  let publicKeyStr = document.getElementById('publicKey').value;
+  let privateKeyStr = document.getElementById('privateKey').value;
+
+  ForgeKeys();
+  function ForgeKeys() {
+    publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
+    privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
+  }
+</script>
+
+<script>
+  function decryptMessage(message) {
+    const encryptedMessage = forge.util.decode64(message);
+    const decryptedMessage = privateKey.decrypt(encryptedMessage);
+
+    return decryptedMessage;
+  }
+</script>
+{% endblock script %}

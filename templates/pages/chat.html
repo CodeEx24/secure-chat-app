@@ -19,9 +19,6 @@
       class="p-6 h-20 border-b border-gray-700 flex justify-between items-center bg-dark-2 text-white"
     >
       <div class="relative">
-        <!-- <button
-            class="flex items-center justify-center w-8 h-8 p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:bg-gray-300 transition duration-300"
-          ></button> -->
         <button
           id="menuButton"
           class="focus:outline-none flex items-center justify-center w-8 h-8 p-2 rounded-md focus:outline-none transition duration-300"
@@ -186,6 +183,10 @@
   }
 </script>
 
+<script>
+  const socket = io();
+</script>
+
 <!-- SEARCH FUNCTIONS FETCH -->
 <script>
   // Get the search input and search results container
@@ -209,8 +210,12 @@
         if (data.result) {
           // Loop through the search results and render them
           data.result.forEach((result) => {
-            const resultElement = document.createElement('a');
-            resultElement.href = `/api/v1/${result.username}`;
+            const resultElement = document.createElement('button');
+
+            // resultElement.href = `/api/v1/${result.username}`;
+            resultElement.onclick = function () {
+              fetchChatDetails(result.id, result.username);
+            };
             resultElement.className =
               'bg-dark-3 w-full px-4 py-2 flex gap-4 border-b border-gray-800';
 
@@ -258,6 +263,17 @@
       .catch((error) => {});
   }
 
+  function fetchChatDetails(id, username) {
+    searchResultsDropdown.classList.add('hidden');
+    console.log('HELLO FROM THE CLICKE', id, ' ', username);
+    // Send the message and reciever username
+    userReceiverId = 0;
+    socket.emit('chat_history', {
+      chat_user_id: id,
+      chat_username: username,
+    });
+  }
+
   // Handle input events in the search input (for real-time search)
   searchInput.addEventListener('input', (event) => {
     const query = searchInput.value.trim();
@@ -293,17 +309,50 @@
   });
 </script>
 
-<!-- SOCKETIO -->
 <script>
-  // Get the last ellement in my url
-  const url = window.location.href;
-  const urlArray = url.split('/');
-  const userReceiverId = urlArray[urlArray.length - 1];
+  // On connect it will get the current user public key
+  socket.on('chat_details', (data) => {
+    if (data.chat_history) {
+      updateChatHeader(
+        data.current_chat_username,
+        'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'
+      );
+      renderChatHistory(data.chat_history);
+    }
 
-  const socket = io.connect('http://' + document.domain + ':' + location.port, {
-    query: {
-      chat_user_id: userReceiverId, // User B's ID or username
-    },
+    const chatUserContainer = document.getElementById('chat-user-container');
+
+    data.chat_user.forEach((chat) => {
+      chat.isCurrentUser = data.user_id === chat.sender_id;
+      const chatUserElement = createChatUserElement(chat);
+      chatUserContainer.appendChild(chatUserElement);
+    });
+
+    recipientPublicKey = forge.pki.publicKeyFromPem(
+      data.current_chat_public_key
+    );
+
+    const chatContainer = document.getElementById('chat-container');
+    chatContainer.innerHTML = ''; // Clear existing chat history
+    data.chat_history.forEach(function (message) {
+      if (message.sender == userReceiverId) {
+        // Handle outgoing messages from the current user
+        const decryptedMessage = decryptMessage(message.cipher);
+
+        const incomingMessageContainer =
+          createIncomingMessageContainer(decryptedMessage);
+        chatContainer.appendChild(incomingMessageContainer);
+      } else {
+        // Handle outgoing messages from the current user
+        const decryptedMessage = decryptMessage(message.cipher);
+        const outgoingMessageContainer =
+          createOutgoingMessageContainer(decryptedMessage);
+        chatContainer.appendChild(outgoingMessageContainer);
+      }
+    });
+    setTimeout(() => {
+      scrollToBottom();
+    }, 10); // Adjust the delay as needed
   });
 </script>
 
@@ -587,51 +636,6 @@
     }
 
     scrollToBottom();
-  });
-
-  // On connect it will get the current user public key
-  socket.on('chat_details', (data) => {
-    if (data.chat_history) {
-      updateChatHeader(
-        data.current_chat_username,
-        'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'
-      );
-      renderChatHistory(data.chat_history);
-    }
-
-    const chatUserContainer = document.getElementById('chat-user-container');
-
-    data.chat_user.forEach((chat) => {
-      chat.isCurrentUser = data.user_id === chat.sender_id;
-      const chatUserElement = createChatUserElement(chat);
-      chatUserContainer.appendChild(chatUserElement);
-    });
-
-    recipientPublicKey = forge.pki.publicKeyFromPem(
-      data.current_chat_public_key
-    );
-
-    const chatContainer = document.getElementById('chat-container');
-    chatContainer.innerHTML = ''; // Clear existing chat history
-    data.chat_history.forEach(function (message) {
-      if (message.sender == userReceiverId) {
-        // Handle outgoing messages from the current user
-        const decryptedMessage = decryptMessage(message.cipher);
-
-        const incomingMessageContainer =
-          createIncomingMessageContainer(decryptedMessage);
-        chatContainer.appendChild(incomingMessageContainer);
-      } else {
-        // Handle outgoing messages from the current user
-        const decryptedMessage = decryptMessage(message.cipher);
-        const outgoingMessageContainer =
-          createOutgoingMessageContainer(decryptedMessage);
-        chatContainer.appendChild(outgoingMessageContainer);
-      }
-    });
-    setTimeout(() => {
-      scrollToBottom();
-    }, 10); // Adjust the delay as needed
   });
 </script>
 

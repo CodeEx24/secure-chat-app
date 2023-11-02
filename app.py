@@ -90,7 +90,8 @@ def create_app():
     def home():
         private_key=session['private_key']
         public_key=session['public_key']
-        return render_template('pages/home.html', private_key=private_key, public_key=public_key)
+        user_id = session['user_id']
+        return render_template('pages/home.html', private_key=private_key, public_key=public_key, user_id=user_id)
     
     @app.route('/practice')
     @userRequired

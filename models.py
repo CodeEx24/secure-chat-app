@@ -12,7 +12,7 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = 'Users'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     name = db.Column(db.String(255))
     username = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
@@ -25,7 +25,7 @@ class User(db.Model):
 class Messages(db.Model):
     __tablename__ = 'Messages'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     chatted_id = db.Column(db.Integer, db.ForeignKey('ChattedUser.id', ondelete="CASCADE"), nullable=False)
     timestamp = db.Column(db.DateTime)
     sender_ciphertext = db.Column(db.String, nullable=False)
@@ -34,7 +34,7 @@ class Messages(db.Model):
 class ChattedUser(db.Model):
     __tablename__ = 'ChattedUser'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
 
@@ -42,7 +42,7 @@ class ChattedUser(db.Model):
 class UserKey(db.Model):
     __tablename__ = 'UserKeys'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
     private_key = db.Column(db.String, nullable=False)
 
@@ -50,7 +50,7 @@ class UserKey(db.Model):
 class SecurityQuestion(db.Model):
     __tablename__ = 'SecurityQuestion'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False, unique=True)
     question_id = db.Column(db.Integer, db.ForeignKey('Questions.id', ondelete="CASCADE"), nullable=False)
     answer = db.Column(db.String(255), nullable=False)
@@ -60,7 +60,7 @@ class SecurityQuestion(db.Model):
 class Question(db.Model):
     __tablename__ = 'Questions'
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     question = db.Column(db.String(255), nullable=False)
     
 # # * REQUIRED FOR USERS

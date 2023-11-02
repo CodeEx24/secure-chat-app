@@ -88,6 +88,9 @@
           <!-- Search result items will be appended here -->
         </div>
       </div>
+      <input type="hidden" id="publicKey" value="{{ public_key }}" />
+      <input type="hidden" id="privateKey" value="{{ private_key }}" />
+      <input type="hidden" id="userId" value="{{ user_id }}" />
     </header>
 
     <!-- Contact List -->
@@ -102,10 +105,43 @@
   </div>
 
   <!-- Main Chat Area -->
-  <div class="flex-1">
+
+  <!-- Selected Chats -->
+  <div class="flex-1 hidden" id="chat">
+    <!-- Chat Header -->
+    <div id="username"></div>
+
     <!-- Chat Messages CHART CONTAINER-->
     <div
       id="chat-container"
+      class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom"
+    ></div>
+
+    <!-- Chat Input -->
+    <footer
+      class="bg-dark-3 border-t border-gray-700 p-4 absolute bottom-0 w-3/4"
+    >
+      <div class="flex items-center">
+        <input
+          type="text"
+          id="message-input"
+          placeholder="Type a message..."
+          class="w-full p-2 text-light-1 bg-dark-4 rounded-md border border-gray-800 focus:outline-none focus:border-blue-500"
+        />
+        <button
+          class="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2"
+          onclick="sendMessage()"
+        >
+          Send
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- No selected Chats -->
+  <div class="flex-1" id="no-chat">
+    <div
+      id="no-chat-container"
       class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom flex justify-center items-center"
     >
       <p class="text-light-1 p-2 bg-dark-3 rounded-lg">
@@ -119,8 +155,18 @@
 <!-- SCRIPTS -->
 {% block script %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
-<!-- Scroll to bottom -->
+
+<!-- SEND MESSAGES TRIGGER ON ENTER -->
 <script>
+  // Listen for Enter key press in the message input
+  document
+    .getElementById('message-input')
+    .addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        sendMessage(); // Trigger the send button's click event
+      }
+    });
+
   // Get the chat messages container
   const chatMessages = document.querySelector('.message-bottom');
 
@@ -134,7 +180,6 @@
 
 <!-- Menu button dropdown (Header) -->
 <script>
-  // JavaScript for showing/hiding the menu
   const menuButton = document.getElementById('menuButton');
   const menuDropdown = document.getElementById('menuDropdown');
 
@@ -152,12 +197,6 @@
       menuDropdown.classList.add('hidden');
     }
   });
-</script>
-
-<!-- Variables -->
-<script>
-  const currentChatId = 0;
-  const currentPublicKey = '';
 </script>
 
 <!-- SEARCH FUNCTIONS FETCH -->
@@ -183,8 +222,12 @@
         if (data.result) {
           // Loop through the search results and render them
           data.result.forEach((result) => {
-            const resultElement = document.createElement('a');
-            resultElement.href = `/api/v1/${result.username}`;
+            const resultElement = document.createElement('button');
+
+            // resultElement.href = `/api/v1/${result.username}`;
+            resultElement.onclick = function () {
+              fetchChatDetails(result.id, result.username);
+            };
             resultElement.className =
               'bg-dark-3 w-full px-4 py-2 flex gap-4 border-b border-gray-800';
 
@@ -229,9 +272,17 @@
         // Show the search results container
         searchResultsDropdown.classList.remove('hidden');
       })
-      .catch((error) => {
-        console.error('Error fetching search results:', error);
-      });
+      .catch((error) => {});
+  }
+
+  function fetchChatDetails(id, username) {
+    searchResultsDropdown.classList.add('hidden');
+    // Send the message and reciever username
+    userReceiverId = id;
+    socket.emit('chat_history', {
+      chat_user_id: userReceiverId,
+      chat_username: username,
+    });
   }
 
   // Handle input events in the search input (for real-time search)
@@ -274,9 +325,7 @@
   const socket = io();
 
   // I want to get the connect data here
-  socket.on('connect', () => {
-    console.log('HELLO');
-  });
+  socket.on('connect', () => {});
 
   const chatContainer = document.getElementById('chat-container');
   // Get the last ellement in my url
@@ -284,33 +333,60 @@
   const urlArray = url.split('/');
   const receiver_username = urlArray[urlArray.length - 1];
 
-  function sendMessage() {
-    // Get the message value and chat container
-    const message = document.getElementById('message').value;
-    console.log('message: ', message);
-    console.log('reciever_username: ', receiver_username);
-    // Send the message and reciever username
-    socket.emit('send_message', {
-      message: message,
-      receiver_username: receiver_username,
-    });
-  }
+  // SENDING MESSAGES
+  socket.on('message', function (data) {
+    const chatContainer = document.getElementById('chat-container');
+    if (data.sender == userId) {
+      // Handle outgoing messages from the current user
+      const decryptedMessage = decryptMessage(data.senderCipher);
+      const outgoingMessageContainer =
+        createOutgoingMessageContainer(decryptedMessage);
+      chatContainer.appendChild(outgoingMessageContainer);
+      updateSidebar(data.sender, data.receiver, decryptedMessage);
+    } else if (data.sender == userReceiverId) {
+      // Handle outgoing messages from the current user
+      const decryptedMessage = decryptMessage(data.receiverCipher);
+      const incomingMessageContainer =
+        createIncomingMessageContainer(decryptedMessage);
+      chatContainer.appendChild(incomingMessageContainer);
+
+      updateSidebar(data.sender, data.receiver, decryptedMessage);
+    } else {
+      // Handle outgoing messages from the current user
+      const decryptedMessage = decryptMessage(data.receiverCipher);
+
+      updateSidebar(data.sender, data.receiver, decryptedMessage);
+    }
+
+    scrollToBottom();
+  });
+
   // On connect, it will get the current user public key
   socket.on('chat_details', (data) => {
-    console.log(data.chat_user);
     const chatUserContainer = document.getElementById('chat-user-container'); // Replace 'chat-user-container' with the ID of your container element
+
+    // Remove any existing chat user links
+    while (chatUserContainer.firstChild) {
+      chatUserContainer.removeChild(chatUserContainer.firstChild);
+    }
 
     data.chat_user.forEach((chat) => {
       // Create the HTML structure for each chat user
-      const chatUserLink = document.createElement('a'); // Wrap the div in an anchor tag
-      chatUserLink.href = `/chat/${chat.id}`; // Set the link's URL based on chat.id
-      chatUserLink.classList.add(
+      const chatUserElement = document.createElement('button'); // Wrap the div in an anchor tag
+      chatUserElement.id = chat.id;
+      chatUserElement.href = `/chat/${chat.id}`; // Set the link's URL based on chat.id
+      // resultElement.href = `/api/v1/${result.username}`;
+      chatUserElement.onclick = function () {
+        fetchChatDetails(chat.id, chat.username);
+      };
+      chatUserElement.classList.add(
         'flex',
         'items-center',
         'cursor-pointer',
         'hover:bg-dark-3',
         'p-4',
-        'bg-active'
+        'bg-active',
+        'w-full'
       );
 
       const avatarDiv = document.createElement('div');
@@ -334,7 +410,12 @@
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('flex');
       const usernameH2 = document.createElement('h2');
-      usernameH2.classList.add('text-lg', 'text-light-1', 'font-inter');
+      usernameH2.classList.add(
+        'text-lg',
+        'text-light-1',
+        'font-inter',
+        'text-left'
+      );
       usernameH2.textContent = chat.username;
       // Check if data.user_id is equal to chat.sender_id, then add "You: " at the start of the message in which 'You' is inside a <span> tag and bold
       const messageContainer = document.createElement('div');
@@ -349,43 +430,459 @@
 
       const messageP = document.createElement('p');
       messageP.classList.add('text-light-2', 'text-sm', 'line-clamp-1');
+      messageP.id = `message-${chat.id}`;
       messageP.textContent = decryptMessage(chat.message);
 
       messageDiv.appendChild(messageP);
 
       contentDiv.appendChild(usernameH2);
       contentDiv.appendChild(messageDiv);
-      chatUserLink.appendChild(avatarDiv);
-      chatUserLink.appendChild(contentDiv);
+      chatUserElement.appendChild(avatarDiv);
+      chatUserElement.appendChild(contentDiv);
 
       // Append the chat user link to the container
-      chatUserContainer.appendChild(chatUserLink);
+      chatUserContainer.appendChild(chatUserElement);
+    });
+  });
+
+  socket.on('load_messages', function (data) {
+    renderedMessage = data.render_message_count;
+    console.log('renderedMessage: ', renderedMessage);
+    renderAdditionalChatHistory(
+      data.chat_history,
+      data.total_message_count,
+      renderedMessage
+    );
+    const chatContainer = document.getElementById('chat-container');
+
+    // Define an asynchronous function to decrypt a message
+    async function decryptAndAppendMessage(cipher, createMessageContainer) {
+      if (cipher) {
+        try {
+          const decryptedMessage = await decryptMessage(cipher);
+          const messageContainer = createMessageContainer(decryptedMessage);
+          chatContainer.prepend(messageContainer);
+        } catch (error) {
+          console.error('Error decrypting message:', error);
+        }
+      }
+    }
+
+    data.chat_history.forEach(function (message) {
+      if (message.sender == userId) {
+        // Handle outgoing messages from the current user
+        decryptAndAppendMessage(
+          message.senderCipher,
+          createOutgoingMessageContainer
+        );
+      } else if (message.sender == userReceiverId) {
+        // Handle incoming messages from the current user
+        decryptAndAppendMessage(
+          message.receiverCipher,
+          createIncomingMessageContainer
+        );
+      }
     });
   });
 </script>
 
+<!-- CHAT USER HISTORY -->
+<script>
+  // On connect it will get the current user public key
+  socket.on('chat_user', (data) => {
+    console.log('DATA: ', data.chat_history);
+    renderedMessage = data.render_message_count;
+    console.log('renderedMessage: ', renderedMessage);
+    if (data.chat_history) {
+      updateChatHeader(
+        data.current_chat_username,
+        'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'
+      );
+      renderChatHistory(
+        data.chat_history,
+        data.total_message_count,
+        renderedMessage
+      );
+    }
+
+    const chatUserContainer = document.getElementById('chat-user-container');
+
+    recipientPublicKey = forge.pki.publicKeyFromPem(
+      data.current_chat_public_key
+    );
+
+    const chatContainer = document.getElementById('chat-container');
+    const noChat = document.getElementById('no-chat');
+    const chat = document.getElementById('chat');
+
+    noChat.classList.add('hidden');
+    chat.classList.remove('hidden');
+
+    chatContainer.innerHTML = ''; // Clear existing chat history
+    data.chat_history.forEach(function (message) {
+      if (message.sender == userReceiverId) {
+        // Handle outgoing messages from the current user
+        const decryptedMessage = decryptMessage(message.cipher);
+
+        const incomingMessageContainer =
+          createIncomingMessageContainer(decryptedMessage);
+        chatContainer.appendChild(incomingMessageContainer);
+      } else {
+        // Handle outgoing messages from the current user
+        const decryptedMessage = decryptMessage(message.cipher);
+        const outgoingMessageContainer =
+          createOutgoingMessageContainer(decryptedMessage);
+        chatContainer.appendChild(outgoingMessageContainer);
+      }
+    });
+    setTimeout(() => {
+      scrollToBottom();
+    }, 10); // Adjust the delay as needed
+  });
+</script>
+
+<!--  ALL FUNCTIONS -->
+<script>
+  function sendMessage() {
+    // Get the message value and chat container
+    const messageInput = document.getElementById('message-input');
+    const message = messageInput.value;
+    if (message) {
+      const senderEncryptedMessage = encryptMessage(publicKey, message);
+      const receiverEncryptedMessage = encryptMessage(
+        recipientPublicKey,
+        message
+      );
+      socket.emit('send_message', {
+        userReceiverId: userReceiverId,
+        senderEncryptedMessage: senderEncryptedMessage,
+        receiverEncryptedMessage: receiverEncryptedMessage,
+      });
+      messageInput.value = '';
+    }
+  }
+
+  // Function to update the sidebar with the new message
+  function updateSidebar(sender, receiver, message) {
+    if (sender == userId) {
+      const link = document.getElementById(`${receiver}`);
+      const span = document.getElementById(`span-${receiver}`);
+      const messageElement = document.getElementById(`message-${receiver}`);
+      // Update the text content of message
+      messageElement.textContent = message;
+      if (span) {
+        // Update the text content of span
+        span.innerHTML = 'You: ';
+      }
+      const chatUserContainer = document.getElementById('chat-user-container');
+      // Move the link as the first in chatUserContainer
+      chatUserContainer.prepend(link);
+    } else {
+      const link = document.getElementById(`${sender}`);
+      const span = document.getElementById(`span-${sender}`);
+      const messageElement = document.getElementById(`message-${sender}`);
+
+      // Update the text content of message
+      messageElement.textContent = message;
+
+      if (span) {
+        // Update the text content of span
+        span.innerHTML = '';
+      }
+
+      const chatUserContainer = document.getElementById('chat-user-container');
+      // Move the link as the first in chatUserContainer
+      chatUserContainer.prepend(link);
+    }
+  }
+
+  // Define a function to update the chat header
+  function updateChatHeader(username, image) {
+    const divElement = document.createElement('div');
+    divElement.classList.add(
+      'flex',
+      'items-center',
+      'bg-dark-2',
+      'p-6',
+      'text-gray-700',
+      'text-xl',
+      'font-bold',
+      'h-20',
+      'text-light-1'
+    );
+
+    const centeringDiv = document.createElement('div');
+    centeringDiv.classList.add('flex', 'items-center', 'justify-center');
+
+    const imageElement = document.createElement('img');
+    imageElement.src = image; // Replace with the actual image URL
+    imageElement.alt = 'User Image';
+    imageElement.classList.add('w-12', 'h-12', 'rounded-full', 'mr-3');
+
+    const usernameSpan = document.createElement('span');
+    usernameSpan.textContent = username;
+    usernameSpan.classList.add('font-black', 'text-xl', 'text-light-1');
+
+    centeringDiv.appendChild(imageElement);
+    centeringDiv.appendChild(usernameSpan);
+    divElement.appendChild(centeringDiv);
+
+    const existingHeader = document.querySelector('#username');
+    // Remove child of username and append the divElement
+    while (existingHeader.firstChild) {
+      existingHeader.removeChild(existingHeader.firstChild);
+    }
+    existingHeader.appendChild(divElement);
+  }
+
+  function renderAdditionalChatHistory(
+    chatHistory,
+    totalMessageCount,
+    renderedMessage
+  ) {
+    const chatContainer = document.getElementById('chat-container');
+    const showMoreButton = document.getElementById('show-more');
+    // Calculate the current scroll position before adding new messages
+    const currentScrollTop = chatContainer.scrollTop;
+    const previousScrollHeight = chatContainer.scrollHeight;
+
+    if (showMoreButton) {
+      chatContainer.removeChild(showMoreButton);
+    }
+
+    chatHistory.forEach(function (message) {
+      if (message.sender == userReceiverId) {
+        const decryptedMessage = decryptMessage(message.cipher);
+        const incomingMessageContainer =
+          createIncomingMessageContainer(decryptedMessage);
+        chatContainer.prepend(incomingMessageContainer);
+      } else {
+        const decryptedMessage = decryptMessage(message.cipher);
+        const outgoingMessageContainer =
+          createOutgoingMessageContainer(decryptedMessage);
+        chatContainer.prepend(outgoingMessageContainer);
+      }
+    });
+
+    if (renderedMessage < totalMessageCount) {
+      const showMoreElement = document.createElement('div');
+      showMoreElement.classList.add(
+        'flex',
+        'justify-center',
+        'items-center',
+        'text-light-1',
+        'cursor-pointer',
+        'mb-4'
+      );
+      showMoreElement.id = 'show-more';
+      showMoreElement.textContent = 'Show More';
+      showMoreElement.addEventListener('click', () => {
+        loadMoreMessages(renderedMessage);
+      });
+
+      // Insert the "Show More" button before the first child of chatContainer
+      chatContainer.insertBefore(showMoreElement, chatContainer.firstChild);
+
+      // Set the scroll position to maintain the previous view
+      const newScrollHeight = chatContainer.scrollHeight;
+      chatContainer.scrollTop =
+        currentScrollTop + (newScrollHeight - previousScrollHeight);
+    }
+  }
+
+  // Define a function to render the chat history
+  function renderChatHistory(chatHistory, totalMessageCount, renderedMessage) {
+    const chatContainer = document.getElementById('chat-container');
+    chatContainer.innerHTML = '';
+
+    // Add a show more element after a 500ms delay
+    setTimeout(function () {
+      if (renderedMessage !== totalMessageCount) {
+        console.log('NOT EQUAL SHOW MORE');
+        // Append element to chatContainer
+        const showMoreElement = document.createElement('div');
+        showMoreElement.classList.add(
+          'flex',
+          'justify-center',
+          'items-center',
+          'text-light-1',
+          'cursor-pointer',
+          'mb-4'
+        );
+        showMoreElement.id = 'show-more';
+        showMoreElement.textContent = 'Show More';
+        // Add a show more functions
+        showMoreElement.addEventListener('click', () => {
+          loadMoreMessages(renderedMessage);
+        });
+        chatContainer.prepend(showMoreElement);
+      }
+    }, 1);
+
+    chatHistory.forEach(function (message) {
+      if (message.sender == userReceiverId) {
+        // Handle outgoing messages from the current user
+        const decryptedMessage = decryptMessage(message.cipher);
+
+        const incomingMessageContainer =
+          createIncomingMessageContainer(decryptedMessage);
+        chatContainer.appendChild(incomingMessageContainer);
+      } else {
+        // Handle outgoing messages from the current user
+        const decryptedMessage = decryptMessage(message.cipher);
+        const outgoingMessageContainer =
+          createOutgoingMessageContainer(decryptedMessage);
+        chatContainer.appendChild(outgoingMessageContainer);
+      }
+    });
+
+    setTimeout(() => {
+      scrollToBottom();
+    }, 10);
+  }
+
+  function loadMoreMessages(renderedMessage) {
+    console.log('LOADING MESSAGES');
+    socket.emit('load_more_message', {
+      chat_user_id: userReceiverId,
+      rendered_message: renderedMessage,
+    });
+  }
+</script>
+
+<!-- OUTGOING AND INCOMING MESSAGE CONTAINER -->
+<script>
+  // Function to create an outgoing message container
+  function createOutgoingMessageContainer(messageText) {
+    const messageContainer = document.createElement('div');
+    messageContainer.classList.add(
+      'flex',
+      'justify-end',
+      'mb-4',
+      'cursor-pointer'
+    );
+
+    const messageContent = document.createElement('div');
+    messageContent.classList.add(
+      'flex',
+      'max-w-96',
+      'bg-indigo-500',
+      'text-white',
+      'rounded-lg',
+      'p-3',
+      'gap-3'
+    );
+
+    const messageTextElement = document.createElement('p');
+    messageTextElement.innerText = messageText;
+
+    messageContent.appendChild(messageTextElement);
+
+    const avatarContainer = document.createElement('div');
+    avatarContainer.classList.add(
+      'w-16',
+      'h-9',
+      'rounded-full',
+      'flex',
+      'items-center',
+      'justify-center',
+      'ml-2'
+    );
+
+    const avatarImage = document.createElement('img');
+    avatarImage.src =
+      'https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+    avatarImage.alt = 'Avatar';
+    avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+
+    avatarContainer.appendChild(avatarImage);
+
+    messageContainer.appendChild(messageContent);
+    messageContainer.appendChild(avatarContainer);
+
+    return messageContainer;
+  }
+
+  // Function to create an incoming message container
+  function createIncomingMessageContainer(messageText) {
+    const incomingMessageContainer = document.createElement('div');
+    incomingMessageContainer.classList.add('flex', 'mb-4', 'cursor-pointer');
+
+    const avatarContainer = document.createElement('div');
+    avatarContainer.classList.add(
+      'w-16',
+      'h-9',
+      'rounded-full',
+      'flex',
+      'items-center',
+      'justify-center',
+      'mr-2'
+    );
+
+    const avatarImage = document.createElement('img');
+    avatarImage.src =
+      'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+    avatarImage.alt = 'User Avatar';
+    avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+
+    avatarContainer.appendChild(avatarImage);
+
+    const messageContent = document.createElement('div');
+    messageContent.classList.add(
+      'flex',
+      'max-w-96',
+      'bg-dark-4',
+      'rounded-lg',
+      'p-3',
+      'gap-3'
+    );
+
+    const messageTextElement = document.createElement('p');
+    messageTextElement.innerText = messageText;
+    messageTextElement.classList.add('text-light-1');
+
+    messageContent.appendChild(messageTextElement);
+
+    incomingMessageContainer.appendChild(avatarContainer);
+    incomingMessageContainer.appendChild(messageContent);
+
+    return incomingMessageContainer;
+  }
+</script>
+
+<!-- PUBLIC KEY RELATED AND ENCRYPTION DECRYPTION FUNCTION -->
 <script>
   let publicKey;
   let privateKey;
   let recipientPublicKey;
+  let renderedMessage;
 
   // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
   let publicKeyStr = document.getElementById('publicKey').value;
   let privateKeyStr = document.getElementById('privateKey').value;
+  let userId = document.getElementById('userId').value;
 
   ForgeKeys();
   function ForgeKeys() {
     publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
     privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
   }
-</script>
 
-<script>
+  function encryptMessage(key, message) {
+    const encryptedMessage = key.encrypt(forge.util.encodeUtf8(message));
+    const base64EncryptedMessage = forge.util.encode64(encryptedMessage);
+    return base64EncryptedMessage;
+  }
+
   function decryptMessage(message) {
     const encryptedMessage = forge.util.decode64(message);
-    const decryptedMessage = privateKey.decrypt(encryptedMessage);
-
-    return decryptedMessage;
+    if (encryptMessage) {
+      const decryptedMessage = privateKey.decrypt(encryptedMessage);
+      return decryptedMessage;
+    } else {
+      console.log('SOMETHING WENT WRONG IN DECRYPTING');
+    }
   }
 </script>
+
 {% endblock script %}

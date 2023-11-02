@@ -64,7 +64,6 @@ def generate_encryption_key(hashed_answer):
     )
     encryption_key = kdf.derive(hashed_answer)
 
-    print("Derived encryption_key:", encryption_key)  # Print the derived key for inspection
 
     return encryption_key
 
@@ -81,7 +80,6 @@ def decrypt_data(encrypted_data, encryption_key):
         return decrypted_data.decode('utf-8')  # Assuming the original data was a UTF-8 encoded string
     except Exception as e:
         # Handle decryption errors, e.g., incorrect key or data format
-        print("Decryption error:", str(e))
         return None  # Return None or raise an exception based on your error handling strategy
 
 # Encrypt a message using the recipient's public key
@@ -124,8 +122,6 @@ def loginUser( username, password):
     
         encryption_key = generate_encryption_key(hashed_answer)
         decrypt_private_key = decrypt_data(user_key.private_key, encryption_key)
-        print("LOGIN ENCRYPTION KEY: ", encryption_key)
-        print("DECRYPTED PRIVATE KEY: ", decrypt_private_key)
         # Successfully authenticated
         session['user_id'] = user.id
         session['user_name'] = user.username
@@ -145,8 +141,6 @@ def registerUser(email, username, password, confirm_password,  answer, question=
     # Initialize an empty list to store error messages
     error_messages = []
 
-    print("security_question: ", question)
-    print("answer: ", answer)
     # Check if question has a value if not throw an error with type of question
     if not question:
         error_messages.append({"message": "Security Question is required", "type": "question"})
@@ -213,11 +207,7 @@ def registerUser(email, username, password, confirm_password,  answer, question=
     public_key_str = public_key.decode('utf-8')
     
 
-    # print("public_key_str: ", public_key_str)
     
-    print("REGISTER PRIVATE KEY: ", private_key)
-    print("REGISTER PRIVATE KEY STR: ", private_key_str)
-    # print("public_key: ", public_key)
     # encrypted_private_key= encrypt_private_key(private_key)
     hashed_password = generate_password_hash(password)
     
@@ -227,12 +217,10 @@ def registerUser(email, username, password, confirm_password,  answer, question=
     # Generate encryption keys based on the user's hashed password
     encryption_key = generate_encryption_key(hashed_answer)
 
-    print("REGISTER ENCRYPTION KEY: ", encryption_key)
    
     # Encrypt the private key
     encrypted_private_key = encrypt_private_key(private_key_str, encryption_key)
 
-    print("REGISTER ENCRYPTED KEY:: ", encrypted_private_key)
    # If no errors, proceed with user registration
     new_user = User(email=email, username=username, password=hashed_password, public_key= public_key_str, key=encryption_key )
 
@@ -253,8 +241,6 @@ def registerUser(email, username, password, confirm_password,  answer, question=
     # Decrypt the private key
     # Decrypt the private key
     # private_key_decrypted = decrypt_data(encrypted_private_key, encryption_key)
-    # print(" PRIVATE KEY (STR): ", private_key_str)
-    # print("DECRYPTED PRIVATE KEY: ", private_key_decrypted)
 
     
     # ... the rest of your registration code ...
@@ -284,7 +270,6 @@ def sendResetPasswordEmail(email):
         mail.send(msg)
         return 'An email with instructions to reset your password has been sent.', 200
     else:
-        print("HERE")
         return 'Email does not exist', 400
 
 # Make the reset password here
@@ -343,60 +328,65 @@ def getUsernameList(username, query_username):
         users = users_query.all()
 
         if users: 
-            print("EXISTING USER: ")
             # For loop the users and return the user as an object 
             users_list = [{"id": user.id, "username": user.username} for user in users]
             return users_list, 200
         else:
-            print("NO USER: ")
             return "No users found", 400
     else:
-        print("PLEASE TYPE: ")
         # Return "Please type to search"
         return "Please type to search", 400
 
 
-def retrieve_chat_history(sender_id, recipient_id):
-
-    # The current user chatting with for example username 3
+def retrieve_chat_history(sender_id, recipient_id, rendered_message=0, reverse=False):
     userSendMessages = db.session.query(
-                ChattedUser).filter(ChattedUser.sender_id == sender_id, ChattedUser.recipient_id == recipient_id).first()
+        ChattedUser).filter(ChattedUser.sender_id == sender_id, ChattedUser.recipient_id == recipient_id).first()
     userReceiveMessages = db.session.query(
-                ChattedUser).filter(ChattedUser.sender_id == recipient_id, ChattedUser.recipient_id == sender_id).first()
-    
+        ChattedUser).filter(ChattedUser.sender_id == recipient_id, ChattedUser.recipient_id == sender_id).first()
+
     if userSendMessages and userReceiveMessages:
-        # print("userSendMessages: ", userSendMessages)
-        # print("userReceiveMessages: ", userReceiveMessages)
-        # Retrive the message in which chatted id is either of the two userSendMessages.id and userReceiveMessages.id
+       # Your existing code here to retrieve chat history
+        query = db.session.query(Messages).filter(
+            or_(
+                Messages.chatted_id == userSendMessages.id,
+                Messages.chatted_id == userReceiveMessages.id
+            )
+        )
+        
+        # Retrieve chat history with offset and limit
         sendChatHistory = db.session.query(Messages).filter(
             or_(
                 Messages.chatted_id == userSendMessages.id,
                 Messages.chatted_id == userReceiveMessages.id
             )
-        ).order_by(Messages.timestamp).limit(50)
+        ).order_by(Messages.timestamp.desc()).limit(50).offset(rendered_message)
         
+        rendered_message_count = sendChatHistory.count()
+        total_message_count = query.count()
         list_chat_history = []
-        
+
         for message in sendChatHistory:
             if message.chatted_id == userSendMessages.id:
-                data ={
+                data = {
                     'sender': sender_id,
                     'cipher': message.sender_ciphertext,
                 }
             else:
-                data ={
+                data = {
                     'sender': recipient_id,
                     'cipher': message.receiver_ciphertext,
                 }
             
             list_chat_history.append(data)
-        return list_chat_history
+        if reverse:
+            return list(reversed(list_chat_history)), total_message_count, rendered_message_count
+        else:
+            return list_chat_history, total_message_count, rendered_message+rendered_message_count
 
-        
+
         
     #     sendChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userSendMessages.id)
     #     recieveChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userRecieveMessages.id)
         
         
     # else:
-    #     print("NO CHAT HISTORY WITH USER")
