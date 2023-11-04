@@ -136,8 +136,8 @@ def loginUser( username, password):
     if error_messages:
         return error_messages, 400
 
-def registerUser(email, username, password, confirm_password,  answer, question=None):
-
+def registerUser(email, fullname, username, password, confirm_password,  answer, question=None):
+    
     # Initialize an empty list to store error messages
     error_messages = []
 
@@ -178,6 +178,12 @@ def registerUser(email, username, password, confirm_password,  answer, question=
     else: 
         error_messages.append({"message": "Email is required", "type": "email"})
 
+    if fullname:
+        # Validate the username format (no spaces, only underscores allowed)
+        fullname_pattern = re.compile(r'^[a-zA-Z\s]+$')
+        if not fullname_pattern.match(fullname):
+            error_messages.append({"message": "Special characters are not allowed", "type": "fullname"})
+
     if username:
         # Validate the username format (no spaces, only underscores allowed)
         username_pattern = re.compile(r'^[^\s]+(?:_[^\s]+)*$')
@@ -216,14 +222,12 @@ def registerUser(email, username, password, confirm_password,  answer, question=
     
     # Generate encryption keys based on the user's hashed password
     encryption_key = generate_encryption_key(hashed_answer)
-
    
     # Encrypt the private key
     encrypted_private_key = encrypt_private_key(private_key_str, encryption_key)
 
    # If no errors, proceed with user registration
-    new_user = User(email=email, username=username, password=hashed_password, public_key= public_key_str, key=encryption_key )
-
+    new_user = User(email=email, name=fullname, username=username, password=hashed_password, public_key= public_key_str, key=encryption_key )
 
     # Save the user to the database
     db.session.add(new_user)
@@ -338,53 +342,86 @@ def getUsernameList(username, query_username):
         return "Please type to search", 400
 
 
+from sqlalchemy import or_
+
 def retrieve_chat_history(sender_id, recipient_id, rendered_message=0, reverse=False):
     userSendMessages = db.session.query(
         ChattedUser).filter(ChattedUser.sender_id == sender_id, ChattedUser.recipient_id == recipient_id).first()
     userReceiveMessages = db.session.query(
         ChattedUser).filter(ChattedUser.sender_id == recipient_id, ChattedUser.recipient_id == sender_id).first()
 
-    if userSendMessages and userReceiveMessages:
-       # Your existing code here to retrieve chat history
-        query = db.session.query(Messages).filter(
-            or_(
-                Messages.chatted_id == userSendMessages.id,
-                Messages.chatted_id == userReceiveMessages.id
-            )
-        )
+    if userSendMessages or userReceiveMessages:
+        query = db.session.query(Messages)
         
-        # Retrieve chat history with offset and limit
-        sendChatHistory = db.session.query(Messages).filter(
-            or_(
-                Messages.chatted_id == userSendMessages.id,
-                Messages.chatted_id == userReceiveMessages.id
+        if userSendMessages and not userReceiveMessages:
+            query = query.filter(Messages.chatted_id == userSendMessages.id)
+        elif userReceiveMessages and not userSendMessages:
+            query = query.filter(Messages.chatted_id == userReceiveMessages.id)
+        elif userSendMessages and userReceiveMessages:
+            query = query.filter(
+                or_(
+                    Messages.chatted_id == userSendMessages.id,
+                    Messages.chatted_id == userReceiveMessages.id
+                )
             )
-        ).order_by(Messages.timestamp.desc()).limit(50).offset(rendered_message)
+        
+        sendChatHistory = query.order_by(Messages.timestamp.desc()).limit(50).offset(rendered_message)
         
         rendered_message_count = sendChatHistory.count()
         total_message_count = query.count()
         list_chat_history = []
 
         for message in sendChatHistory:
-            if message.chatted_id == userSendMessages.id:
+            if userSendMessages and message.chatted_id == userSendMessages.id:
                 data = {
                     'sender': sender_id,
                     'cipher': message.sender_ciphertext,
                 }
-            else:
+            elif userReceiveMessages and message.chatted_id == userReceiveMessages.id:
                 data = {
                     'sender': recipient_id,
                     'cipher': message.receiver_ciphertext,
                 }
+            else:
+                # Handle the case where the message doesn't belong to either user
+                continue
             
             list_chat_history.append(data)
         if reverse:
             return list(reversed(list_chat_history)), total_message_count, rendered_message_count
         else:
-            return list_chat_history, total_message_count, rendered_message+rendered_message_count
+            return list_chat_history, total_message_count, rendered_message + rendered_message_count
+    else:
+        return False, 0, 0
 
 
         
+        
+# def changeUserName(user_id, name):
+#     # Query the user id
+#     user = User.query.filter_by(id=user_id).first()
+    
+#     if user:
+#         # Filter the users, excluding the current user's username
+#         users_query = User.query.filter(
+#             User.username.ilike(f'%{query_username}%'),
+#             User.username != username
+#         ).limit(10)
+
+#         # Execute the query to fetch the results
+#         users = users_query.all()
+
+#         if users: 
+#             # For loop the users and return the user as an object 
+#             users_list = [{"id": user.id, "username": user.username} for user in users]
+#             return users_list, 200
+#         else:
+#             return "No users found", 400
+#     else:
+#         # Return "Please type to search"
+#         return "Please type to search", 400        
+
+
     #     sendChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userSendMessages.id)
     #     recieveChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userRecieveMessages.id)
         

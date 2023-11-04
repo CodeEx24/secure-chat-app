@@ -371,6 +371,7 @@
     }
 
     data.chat_user.forEach((chat) => {
+      console.log('CHAT: ', chat);
       // Create the HTML structure for each chat user
       const chatUserElement = document.createElement('button'); // Wrap the div in an anchor tag
       chatUserElement.id = chat.id;
@@ -856,6 +857,7 @@
   let privateKey;
   let recipientPublicKey;
   let renderedMessage;
+  let userReceiverId;
 
   // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
   let publicKeyStr = document.getElementById('publicKey').value;

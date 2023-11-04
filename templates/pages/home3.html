@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+    <!-- Notyf -->
+    <link rel="stylesheet" />
+    <title>{% block title %} {% endblock title %}</title>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'dark-1': '#0A0E0F', // Main Backgroud of chat
+              'dark-2': '#171B1D', // Background of sidebar
+              'dark-3': '#202426', // Search
+              'dark-4': '#252B2E', // Chat
+              'light-1': '#FFFFFF', // Text white
+              'light-2': '#697C89', // Sub descriotion/chat
+              'light-3': '#5C5C7B', // Icons?
+              primary: '#48A6C3',
+              danger: '#ef4444',
+              active: '#252B2E',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans'],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      html {
+        scroll-behavior: smooth;
+        position: relative;
+        min-height: 100%;
+        overflow-x: hidden;
+      }
+
+      /* Customize the scrollbar track */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      /* Customize the scrollbar thumb */
+      ::-webkit-scrollbar-thumb {
+        background-color: #6366f1;
+        border-radius: 6px;
+      }
+
+      /* Customize the scrollbar track */
+      ::-webkit-scrollbar-track {
+        background-color: #171b1d;
+        border-radius: 6px;
+      }
+
+      /* Add this CSS to your stylesheet or in a <style> tag in your HTML document */
+      .message-bottom {
+        /* Set a fixed height to the chat messages container */
+        height: 100vh; /* Adjust the height as needed */
+        overflow: hidden; /* Hide the scrollbar */
+      }
+
+      .message-bottom::-webkit-scrollbar-thumb {
+        background-color: transparent; /* Hide the scrollbar thumb */
+      }
+
+      #chat-container {
+        height: 100%; /* Set a fixed height */
+        overflow-y: auto; /* Enable vertical scrolling */
+      }
+
+      .notyf {
+        margin-top: 80px;
+      }
+    </style>
+    {% block styles %} {% endblock styles %}
+  </head>
+  <body class="bg-slate-200 h-screen">
+    <div class="h-screen flex flex-col justify-between">
+      <!-- MODAL CONTAINER -->
+      <div
+        id="modal"
+        class="fixed inset-0 flex items-center justify-center z-50 hidden"
+      >
+        <div
+          class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"
+        ></div>
+
+        <div
+          class="modal-container w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto"
+        >
+          <div class="modal-content bg-dark-3 py-8 text-left px-8">
+            <!-- Modal header -->
+            <div class="modal-header">
+              <h3 class="text-white text-2xl font-semibold">Profile</h3>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body py-4 flex flex-col">
+              <img
+                src="https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3"
+                alt="User Image"
+                class="w-32 h-32 mx-auto rounded-full"
+              />
+              <button
+                class="flex justify-between items-center mt-6 hover:bg-dark-2 px-6 py-4"
+                onclick="openNameModal()"
+              >
+                <div class="flex justify-between items-center gap-4">
+                  <svg
+                    width="30"
+                    height="30"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g
+                      id="SVGRepo_tracerCarrier"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></g>
+                    <g id="SVGRepo_iconCarrier">
+                      <path
+                        d="M12.12 12.78C12.05 12.77 11.96 12.77 11.88 12.78C10.12 12.72 8.71997 11.28 8.71997 9.50998C8.71997 7.69998 10.18 6.22998 12 6.22998C13.81 6.22998 15.28 7.69998 15.28 9.50998C15.27 11.28 13.88 12.72 12.12 12.78Z"
+                        stroke="white"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                      <path
+                        d="M18.74 19.3801C16.96 21.0101 14.6 22.0001 12 22.0001C9.40001 22.0001 7.04001 21.0101 5.26001 19.3801C5.36001 18.4401 5.96001 17.5201 7.03001 16.8001C9.77001 14.9801 14.25 14.9801 16.97 16.8001C18.04 17.5201 18.64 18.4401 18.74 19.3801Z"
+                        stroke="white"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                      <path
+                        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                        stroke="white"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                    </g>
+                  </svg>
+                  <p class="text-white text-center text-lg font-normal">Name</p>
+                </div>
+                <p
+                  class="text-[#6366f1] text-lg font-semibold"
+                  id="name-display"
+                ></p>
+              </button>
+              <button
+                class="flex justify-between items-center hover:bg-dark-2 px-6 py-4"
+                onclick="sayHello()"
+              >
+                <div class="flex justify-between items-center gap-4">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="30"
+                    height="30"
+                  >
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g
+                      id="SVGRepo_tracerCarrier"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></g>
+                    <g id="SVGRepo_iconCarrier">
+                      <path
+                        d="M15.8571 12C15.8571 14.1302 14.1302 15.8571 12 15.8571C9.86972 15.8571 8.14282 14.1302 8.14282 12C8.14282 9.86972 9.86972 8.14282 12 8.14282C14.1302 8.14282 15.8571 9.86972 15.8571 12ZM15.8571 12L15.8571 13.2857C15.8571 14.7059 17.0084 15.8571 18.4286 15.8571C19.3408 15.8571 20.1422 15.3821 20.5986 14.6658C20.8528 14.2671 21 13.7936 21 13.2857V12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C13.9122 21 15.6851 20.4037 17.1429 19.3868"
+                        stroke="white"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                    </g>
+                  </svg>
+                  <p class="text-white text-center text-lg font-normal">
+                    Username
+                  </p>
+                </div>
+                <p
+                  class="text-[#6366f1] text-lg font-semibold"
+                  id="username-display"
+                ></p>
+              </button>
+              <button
+                class="flex justify-between items-center hover:bg-dark-2 px-6 py-4 w-full gap-4"
+                onclick="sayHello()"
+              >
+                <div class="flex justify-between items-center gap-4">
+                  <svg
+                    width="30"
+                    height="30"
+                    version="1.1"
+                    id="_x32_"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    viewBox="0 0 512 512"
+                    xml:space="preserve"
+                    fill="white"
+                  >
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g
+                      id="SVGRepo_tracerCarrier"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ></g>
+                    <g id="SVGRepo_iconCarrier">
+                      <g>
+                        <path
+                          class="st0"
+                          stroke="white"
+                          d="M510.746,110.361c-2.128-10.754-6.926-20.918-13.926-29.463c-1.422-1.794-2.909-3.39-4.535-5.009 c-12.454-12.52-29.778-19.701-47.531-19.701H67.244c-17.951,0-34.834,7-47.539,19.708c-1.608,1.604-3.099,3.216-4.575,5.067 c-6.97,8.509-11.747,18.659-13.824,29.428C0.438,114.62,0,119.002,0,123.435v265.137c0,9.224,1.874,18.206,5.589,26.745 c3.215,7.583,8.093,14.772,14.112,20.788c1.516,1.509,3.022,2.901,4.63,4.258c12.034,9.966,27.272,15.45,42.913,15.45h377.51 c15.742,0,30.965-5.505,42.967-15.56c1.604-1.298,3.091-2.661,4.578-4.148c5.818-5.812,10.442-12.49,13.766-19.854l0.438-1.05 c3.646-8.377,5.497-17.33,5.497-26.628V123.435C512,119.06,511.578,114.649,510.746,110.361z M34.823,99.104 c0.951-1.392,2.165-2.821,3.714-4.382c7.689-7.685,17.886-11.914,28.706-11.914h377.51c10.915,0,21.115,4.236,28.719,11.929 c1.313,1.327,2.567,2.8,3.661,4.272l2.887,3.88l-201.5,175.616c-6.212,5.446-14.21,8.443-22.523,8.443 c-8.231,0-16.222-2.99-22.508-8.436L32.19,102.939L34.823,99.104z M26.755,390.913c-0.109-0.722-0.134-1.524-0.134-2.341V128.925 l156.37,136.411L28.199,400.297L26.755,390.913z M464.899,423.84c-6.052,3.492-13.022,5.344-20.145,5.344H67.244 c-7.127,0-14.094-1.852-20.142-5.344l-6.328-3.668l159.936-139.379l17.528,15.246c10.514,9.128,23.922,14.16,37.761,14.16 c13.89,0,27.32-5.032,37.827-14.16l17.521-15.253L471.228,420.18L464.899,423.84z M485.372,388.572 c0,0.803-0.015,1.597-0.116,2.304l-1.386,9.472L329.012,265.409l156.36-136.418V388.572z"
+                        ></path>
+                      </g>
+                    </g>
+                  </svg>
+                  <p class="text-white text-center text-lg font-normal">
+                    Email
+                  </p>
+                </div>
+                <p
+                  class="text-[#6366f1] text-lg font-semibold whitespace-normal line-clamp-1"
+                  id="email-display"
+                ></p>
+              </button>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer py-4 hidden">
+              <button
+                id="close-modal"
+                class="bg-blue-500 hover-bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- END OFMODAL CONTAINER -->
+
+      <!-- NAME MODAL CONTAINER -->
+      <div
+        id="nameModal"
+        class="fixed inset-0 flex items-center justify-center z-50 hidden"
+      >
+        <div
+          class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"
+        ></div>
+
+        <div
+          class="modal-container w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto"
+        >
+          <div class="modal-content bg-dark-3 py-8 text-left px-8">
+            <!-- Modal header -->
+            <div class="modal-header">
+              <h3 class="text-white text-2xl font-semibold">Change Name</h3>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body py-4 flex flex-col">
+              <div class="relative z-0 w-full mb-6 group mt-2">
+                <input
+                  type="text"
+                  name="fullname"
+                  id="fullname"
+                  class="block py-2.5 px-2 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-[#6366f1] focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  placeholder=" "
+                  required
+                />
+                <label
+                  for="fullname"
+                  class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-[#6366f1] peer-focus:dark:text-[#6366f1] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                  >Full Name</label
+                >
+                <p
+                  class="text-red-600 text-sm mt-4 font-semibold"
+                  id="fullname-error"
+                ></p>
+              </div>
+
+              <div class="flex justify-end items-center gap-4">
+                <button
+                  class="bg-[#6366f1] hover:bg-opacity-80 text-white font-semibold py-2 px-4 rounded"
+                  onclick="saveName()"
+                >
+                  Save
+                </button>
+                <button
+                  class="bg-red-500 hover:bg-opacity-80 text-white font-semibold py-2 px-4 rounded"
+                  onclick="closeNameModal()"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer py-4 hidden">
+              <button
+                id="close-modal"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END OF MODAL CONTAINER -->
+
+      <!-- SIDEBAR -->
+      <aside
+        id="default-sidebar"
+        class="fixed top-0 md:left-0 right-0 z-40 lg:w-[440px] md:w-80 h-screen transition-transform translate-x-full md:translate-x-0 bg-dark-2 shadow-md"
+        aria-label="Sidebar"
+      >
+        <!-- Add a close (X) icon in the sidebar header -->
+        <div
+          class="flex flex-col justify-between items-center w-full h-screen p-4"
+        >
+          <div class="w-full">
+            <button
+              data-drawer-target="default-sidebar"
+              data-drawer-close="default-sidebar"
+              aria-controls="default-sidebar"
+              type="button"
+              class="text-gray-600 hover:text-gray-800 focus:outline-none float-right md:hidden"
+            >
+              <span class="sr-only">Close sidebar</span>
+              <svg
+                class="w-6 h-6"
+                aria-hidden="true"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M14.293 5.293a1 1 0 011.414 1.414L11.414 10l4.293 4.293a1 1 0 11-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 111.414-1.414L10 8.586l4.293-4.293z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </button>
+
+            <div class="flex items-center md:mt-0 mt-2 bg-dark-2">
+              <header
+                class="h-20 border-b border-gray-700 flex justify-center items-center text-white w-full p-2"
+              >
+                <div class="w-2/12 relative flex">
+                  <!-- <button
+                    class="flex items-center justify-center w-8 h-8 p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:bg-gray-300 transition duration-300"
+                  ></button> -->
+                  <button
+                    id="menuButton"
+                    class="focus:outline-none flex items-center justify-center w-8 h-8 p-2 rounded-md focus:outline-none transition duration-300"
+                  >
+                    <span class="sr-only">Open menu</span>
+                    <svg
+                      class="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"
+                      ></path>
+                    </svg>
+                  </button>
+                  <!-- Menu Dropdown -->
+                  <div
+                    id="menuDropdown"
+                    class="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg hidden"
+                  >
+                    <input
+                      type="hidden"
+                      id="publicKey"
+                      value="{{ public_key }}"
+                    />
+                    <input
+                      type="hidden"
+                      id="privateKey"
+                      value="{{ private_key }}"
+                    />
+                    <ul class="py-2 px-3">
+                      <li>
+                        <button
+                          id="open-modal"
+                          class="flex justify-start w-full px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400 w-full"
+                        >
+                          Profile
+                        </button>
+                      </li>
+                      <li>
+                        <a
+                          href="#"
+                          class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
+                          >Account Settings</a
+                        >
+                      </li>
+                      <li>
+                        <a
+                          href="{{ url_for('logout') }}"
+                          class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
+                          >Logout</a
+                        >
+                      </li>
+                      <!-- Add more menu options here -->
+                    </ul>
+                  </div>
+                </div>
+                <div class="flex w-10/12">
+                  <input
+                    id="searchInput"
+                    type="text"
+                    class="px-4 py-1 bg-dark-3 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+                    placeholder="Search..."
+                  />
+                  <div
+                    class="search-results-dropdown hidden absolute top-16 left-40 bg-white border border-light-3 shadow-md max-h-40 z-50 w-full rounded-lg"
+                  >
+                    <!-- Search result items will be appended here -->
+                  </div>
+                </div>
+              </header>
+            </div>
+            <div class="hidden">
+              <input type="hidden" id="publicKey" value="{{ public_key }}" />
+              <input type="hidden" id="privateKey" value="{{ private_key }}" />
+              <input type="hidden" id="userId" value="{{ user_id }}" />
+            </div>
+            <div class="h-full mt-4 overflow-y-auto flex flex-col">
+              <div
+                class="overflow-y-auto h-screen mb-9 pb-20 bg-dark-2"
+                id="chat-user-container"
+              >
+                <!-- <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
+                  <div class="w-12 h-12 bg-gray-300 rounded-full mr-3"></div>
+                </div> -->
+              </div>
+            </div>
+          </div>
+
+          <!-- NAVIGATION LINKS -->
+          <div class="w-full">
+            <a
+              class="flex items-center px-4 py-4 transition-colors duration-300 transform rounded-lg bg-gradient-to-r from-red-800 to-red-500 hover:from-red-900 hover:to-red-600 text-white font-bold py-2 px-4 rounded shadow-md"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+                />
+              </svg>
+
+              <span class="mx-2 text-sm font-medium">Log Out</span>
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <div class="lg:ml-[440px] md:ml-80">
+        <div class="grid grid-cols-1 lg:grid-cols-2 h-screen" id="chat">
+          <!-- Main Chat Area -->
+          <div class="col-span-1 lg:col-span-2 h-screen bg-dark-1">
+            <!-- Selected Chats -->
+            <div class="overflow-y-auto flex flex-col justify-between h-screen">
+              <!-- Chat Header -->
+              <div class="flex justify-between w-full">
+                <div
+                  id="username"
+                  class="h-1/12 md:w-full w-10/12 bg-dark-2"
+                ></div>
+                <div
+                  class="flex items-center justify-center bg-dark-2 lg:p-0 p-4 md:hidden w-2/12"
+                >
+                  <button
+                    data-drawer-target="default-sidebar"
+                    data-drawer-open="default-sidebar"
+                    aria-controls="default-sidebar"
+                    type="button"
+                    class="text-gray-600 hover:text-gray-800 focus:outline-none md:hidden"
+                  >
+                    <span class="sr-only">Open sidebar</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      viewBox="0 0 24 24"
+                      class="w-[20px] h-[20px]"
+                    >
+                      <path d="M3 12h18M3 6h18M3 18h18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex h-screen" id="no-chat">
+                <div
+                  id="no-chat-container"
+                  class="w-full overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom flex justify-center items-center"
+                >
+                  <p class="text-light-1 p-2 bg-dark-3 rounded-lg">
+                    Select or search a user to start messaging
+                  </p>
+                </div>
+              </div>
+
+              <!-- Chat Messages CHART CONTAINER-->
+              <div
+                id="chat-container"
+                class="h-full p-4 bg-dark-1 message-bottom overflow-y-auto hidden"
+              ></div>
+
+              <!-- Chat Input -->
+              <footer
+                class="flex items-center bg-dark-3 border-t border-gray-700 p-4 relative w-full bottom-0 hidden"
+                id="send-message-container"
+              >
+                <div class="flex items-center w-full">
+                  <input
+                    type="text"
+                    id="message-input"
+                    placeholder="Type a message..."
+                    class="w-full p-2 text-light-1 bg-dark-4 rounded-md border border-gray-800 focus:outline-none focus:border-blue-500"
+                  />
+                  <button
+                    class="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2"
+                    onclick="sendMessage()"
+                  >
+                    Send
+                  </button>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </div>
+        <!-- No selected Chats -->
+        <!-- <div class="flex-1" id="no-chat">
+          <div
+            id="no-chat-container"
+            class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom flex justify-center items-center"
+          >
+            <p class="text-light-1 p-2 bg-dark-3 rounded-lg">
+              Select or search a user to start messaging
+            </p>
+          </div>
+        </div> -->
+      </div>
+    </div>
+    <!-- CONTENT -->
+    {% block content %} {% endblock content %}
+
+    <script>
+      // saveName function
+      function saveName() {
+        const name = document.getElementById('name').value;
+        const nameError = document.getElementById('name-error');
+        if (!name) {
+          nameError.innerText = 'The name must not be invalid';
+        } else {
+        }
+      }
+
+      // closeNameModal
+      function closeNameModal() {
+        const nameModal = document.getElementById('nameModal');
+        nameModal.classList.add('hidden');
+      }
+
+      // sayHello function
+      function sayHello() {}
+    </script>
+
+    <script>
+      // JavaScript to handle opening and closing the modal
+      const openModalButton = document.getElementById('open-modal');
+      const closeModalButton = document.getElementById('close-modal');
+      const modal = document.getElementById('modal');
+      const modalOverlay = document.querySelector('.modal-overlay');
+
+      function openNameModal() {
+        const nameModal = document.getElementById('nameModal');
+        nameModal.classList.remove('hidden');
+      }
+
+      openModalButton.addEventListener('click', () => {
+        const menuDropdown = document.getElementById('menuDropdown');
+        modal.classList.remove('hidden');
+        menuDropdown.classList.add('hidden');
+      });
+
+      closeModalButton.addEventListener('click', () => {
+        modal.classList.add('hidden');
+      });
+
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+          modal.classList.add('hidden');
+        }
+      });
+    </script>
+
+    <script
+      src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+      integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      // Function to open the sidebar
+      function openSidebar() {
+        const sidebar = document.getElementById('default-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('translate-x-0');
+        overlay.classList.remove('hidden');
+      }
+
+      // Function to close the sidebar
+      function closeSidebar() {
+        const sidebar = document.getElementById('default-sidebar');
+        // const overlay = document.getElementById('sidebar-overlay');
+
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('translate-x-full');
+        // overlay.classList.add('hidden');
+      }
+
+      // Add event listener to open the sidebar
+      document
+        .querySelector('[data-drawer-open="default-sidebar"]')
+        .addEventListener('click', openSidebar);
+
+      // Add event listener to close the sidebar
+      document
+        .querySelector('[data-drawer-close="default-sidebar"]')
+        .addEventListener('click', closeSidebar);
+    </script>
+
+    <!-- SCRIPTS -->
+    {% block script %} {% endblock script %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
+
+    <!-- SEND MESSAGES TRIGGER ON ENTER -->
+    <script>
+      // Listen for Enter key press in the message input
+      document
+        .getElementById('message-input')
+        .addEventListener('keydown', function (event) {
+          if (event.key === 'Enter') {
+            sendMessage(); // Trigger the send button's click event
+          }
+        });
+
+      // Get the chat messages container
+      const chatMessages = document.querySelector('.message-bottom');
+
+      // Scroll to the end of the chat messages
+      function scrollToBottom() {
+        const chatMessages = document.getElementById('chat-container');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      scrollToBottom();
+    </script>
+
+    <!-- Menu button dropdown (Header) -->
+    <script>
+      const menuButton = document.getElementById('menuButton');
+      const menuDropdown = document.getElementById('menuDropdown');
+
+      menuButton.addEventListener('click', () => {
+        if (menuDropdown.classList.contains('hidden')) {
+          menuDropdown.classList.remove('hidden');
+        } else {
+          menuDropdown.classList.add('hidden');
+        }
+      });
+
+      // Close the menu if you click outside of it
+      document.addEventListener('click', (e) => {
+        if (
+          !menuDropdown.contains(e.target) &&
+          !menuButton.contains(e.target)
+        ) {
+          menuDropdown.classList.add('hidden');
+        }
+      });
+    </script>
+
+    <!-- SEARCH FUNCTIONS FETCH -->
+    <script>
+      // Get the search input and search results container
+      const searchInput = document.getElementById('searchInput');
+      const searchResultsDropdown = document.querySelector(
+        '.search-results-dropdown'
+      );
+      // Construct the base URL with the '/api/v1' prefix
+      const baseUrl = "{{ url_for('chat_app_api.searchUsers') }}";
+
+      // Function to make a request to the server with the user's input
+      function searchUsers(query) {
+        // Combine the base URL with the query parameter
+        const apiUrl = baseUrl + `?query=${query}`;
+        fetch(apiUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            // Clear previous search results
+            searchResultsDropdown.innerHTML = '';
+
+            if (data.result) {
+              // Loop through the search results and render them
+              data.result.forEach((result) => {
+                const resultElement = document.createElement('button');
+
+                // resultElement.href = `/api/v1/${result.username}`;
+                resultElement.onclick = function () {
+                  fetchChatDetails(result.id, result.username);
+                };
+                resultElement.className =
+                  'bg-dark-3 w-full px-4 py-2 flex gap-4 border-b border-gray-800';
+
+                // Create and append the child elements with your specified structure
+                const imgElement = document.createElement('img');
+                imgElement.src =
+                  'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+                imgElement.alt = 'User Avatar';
+                imgElement.className = 'w-12 h-12 rounded-full';
+
+                const userTextElement = document.createElement('div');
+
+                const userNameElement = document.createElement('h2');
+                userNameElement.className = 'text-lg text-light-1 font-inter';
+                userNameElement.textContent = `@${result.username}`;
+
+                const userDescriptionElement = document.createElement('p');
+                userDescriptionElement.className =
+                  'text-light-2 text-sm line-clamp-1';
+                userDescriptionElement.textContent = 'Hoorayy!!';
+
+                // Append child elements to resultElement
+                userTextElement.appendChild(userNameElement);
+                userTextElement.appendChild(userDescriptionElement);
+
+                resultElement.appendChild(imgElement);
+                resultElement.appendChild(userTextElement);
+
+                // Append the resultElement to searchResultsDropdown
+                searchResultsDropdown.appendChild(resultElement);
+              });
+            } else {
+              // Create a message element for no results
+              const noResultsMessage = document.createElement('div');
+              noResultsMessage.className =
+                'bg-dark-3 w-full px-4 py-4 flex gap-4';
+              noResultsMessage.textContent = 'No Users Found';
+
+              // Append the message to searchResultsDropdown
+              searchResultsDropdown.appendChild(noResultsMessage);
+            }
+
+            // Show the search results container
+            searchResultsDropdown.classList.remove('hidden');
+          })
+          .catch((error) => {});
+      }
+
+      function fetchChatDetails(id, username) {
+        searchResultsDropdown.classList.add('hidden');
+        // Send the message and reciever username
+        userReceiverId = id;
+        socket.emit('chat_history', {
+          chat_user_id: userReceiverId,
+          chat_username: username,
+        });
+      }
+
+      // Handle input events in the search input (for real-time search)
+      searchInput.addEventListener('input', (event) => {
+        const query = searchInput.value.trim();
+
+        if (query.length > 0) {
+          searchUsers(query);
+        } else {
+          // If the search input is empty, hide the search results
+          searchResultsDropdown.innerHTML = '';
+          searchResultsDropdown.classList.add('hidden');
+        }
+      });
+
+      // Close the search results when clicking outside the search input and results container
+      document.addEventListener('click', (e) => {
+        if (
+          !searchInput.contains(e.target) &&
+          !searchResultsDropdown.contains(e.target)
+        ) {
+          searchResultsDropdown.innerHTML = '';
+          searchResultsDropdown.classList.add('hidden');
+        }
+      });
+
+      // Function to handle the focus event on the search input
+      searchInput.addEventListener('focus', (event) => {
+        // Check if the input is not empty and trigger the search again
+        const query = searchInput.value.trim();
+
+        if (query.length > 0) {
+          searchUsers(query);
+        }
+      });
+    </script>
+
+    <!-- SOCKETIO -->
+    <script>
+      const socket = io();
+
+      // I want to get the connect data here
+      socket.on('connect', () => {});
+
+      const chatContainer = document.getElementById('chat-container');
+
+      // SENDING MESSAGES
+      socket.on('message', function (data) {
+        const chatContainer = document.getElementById('chat-container');
+        if (data.sender == userId) {
+          // Handle outgoing messages from the current user
+          const decryptedMessage = decryptMessage(data.senderCipher);
+          const outgoingMessageContainer =
+            createOutgoingMessageContainer(decryptedMessage);
+          chatContainer.appendChild(outgoingMessageContainer);
+          if (data.new_message) {
+            const spanUsername = document.getElementById('span-username');
+            const usernameText = spanUsername.textContent;
+
+            const message = decryptedMessage;
+
+            const chatUserContainer = document.getElementById(
+              'chat-user-container'
+            );
+
+            const chat = {
+              sender_id: data.sender,
+              username: usernameText,
+              chat_user_photo: chatUserPhoto,
+              id: userReceiverId,
+              message: data.senderCipher,
+              active: true,
+            };
+
+            const chatUserElement = createChatUserElement(chat);
+            chatUserContainer.appendChild(chatUserElement);
+          } else {
+            updateSidebar(userId, data.receiver, decryptedMessage);
+          }
+        } else if (data.sender == userReceiverId) {
+          // Handle outgoing messages from the current user
+          const decryptedMessage = decryptMessage(data.receiverCipher);
+          const incomingMessageContainer =
+            createIncomingMessageContainer(decryptedMessage);
+          chatContainer.appendChild(incomingMessageContainer);
+          updateSidebar(data.sender, data.receiver, decryptedMessage);
+          // if (data.new_message) {
+          // } else {
+          //   updateSidebar(data.sender, data.receiver, decryptedMessage);
+          // }
+        } else {
+          // Handle outgoing messages from the current user
+          const decryptedMessage = decryptMessage(data.receiverCipher);
+          updateSidebar(data.sender, data.receiver, decryptedMessage);
+          // chatContainer.appendChild(incomingMessageContainer);
+          // if (data.new_message) {
+          // } else {
+          //   updateSidebar(data.sender, data.receiver, decryptedMessage);
+          // }
+        }
+
+        scrollToBottom();
+      });
+
+      socket.on('chat_details', (data) => {
+        // Get name-display
+        const nameModalElement = document.getElementById('name-display');
+        // Get username-display
+        const usernameModalElement =
+          document.getElementById('username-display');
+        // Get email-display
+        const emailModalElement = document.getElementById('email-display');
+
+        // Update the display element using data.name, data.username, data.email
+        nameModalElement.textContent = data.name;
+        usernameModalElement.textContent = data.username;
+        emailModalElement.textContent = data.email;
+
+        const chatUserContainer = document.getElementById(
+          'chat-user-container'
+        ); // Replace 'chat-user-container' with the ID of your container element
+
+        // Remove any existing chat user links
+        while (chatUserContainer.firstChild) {
+          chatUserContainer.removeChild(chatUserContainer.firstChild);
+        }
+
+        // Usage:
+        data.chat_user.forEach((chat) => {
+          const chatUserElement = createChatUserElement(chat);
+          chatUserContainer.appendChild(chatUserElement);
+        });
+      });
+
+      function createChatUserElement(chat) {
+        const chatUserElement = document.createElement('button');
+        chatUserElement.id = chat.id;
+        // chatUserElement.href = `/chat/${chat.id}`;
+        chatUserElement.onclick = function () {
+          fetchChatDetails(chat.id, chat.username);
+        };
+
+        chatUserElement.classList.add(
+          'flex',
+          'items-center',
+          'cursor-pointer',
+          'hover:bg-dark-3',
+          'p-4',
+          'w-full',
+          chat.active && 'bg-active'
+        );
+
+        const avatarDiv = document.createElement('div');
+        avatarDiv.classList.add(
+          'w-12',
+          'h-12',
+          'bg-gray-300',
+          'rounded-full',
+          'mr-3'
+        );
+
+        const avatarImg = document.createElement('img');
+        avatarImg.src = chat.chat_user_photo;
+        avatarImg.alt = 'User Avatar';
+        avatarImg.classList.add('w-12', 'h-12', 'rounded-full');
+
+        avatarDiv.appendChild(avatarImg);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.classList.add('flex-1');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('flex');
+
+        const usernameH2 = document.createElement('h2');
+        usernameH2.classList.add(
+          'text-lg',
+          'text-light-1',
+          'font-inter',
+          'text-left'
+        );
+        usernameH2.textContent = chat.username;
+
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('flex', 'gap-2', 'items-center');
+
+        const span = document.createElement('span');
+        span.id = `span-${chat.id}`;
+        span.classList.add('font-black', 'text-sm', 'text-light-2');
+        if (userId == chat.sender_id) {
+          span.innerHTML = 'You:&nbsp;';
+        }
+
+        messageDiv.appendChild(span);
+        const messageP = document.createElement('p');
+        messageP.classList.add('text-light-2', 'text-sm', 'line-clamp-1');
+        messageP.id = `message-${chat.id}`;
+        messageP.textContent = decryptMessage(chat.message);
+
+        messageDiv.appendChild(messageP);
+
+        contentDiv.appendChild(usernameH2);
+        contentDiv.appendChild(messageDiv);
+        chatUserElement.appendChild(avatarDiv);
+        chatUserElement.appendChild(contentDiv);
+
+        return chatUserElement;
+      }
+
+      socket.on('load_messages', function (data) {
+        renderedMessage = data.render_message_count;
+        renderAdditionalChatHistory(
+          data.chat_history,
+          data.total_message_count,
+          renderedMessage
+        );
+        const chatContainer = document.getElementById('chat-container');
+
+        // Define an asynchronous function to decrypt a message
+        async function decryptAndAppendMessage(cipher, createMessageContainer) {
+          if (cipher) {
+            try {
+              const decryptedMessage = await decryptMessage(cipher);
+              const messageContainer = createMessageContainer(decryptedMessage);
+              chatContainer.prepend(messageContainer);
+            } catch (error) {}
+          }
+        }
+
+        data.chat_history.forEach(function (message) {
+          if (message.sender == userId) {
+            // Handle outgoing messages from the current user
+            decryptAndAppendMessage(
+              message.senderCipher,
+              createOutgoingMessageContainer
+            );
+          } else if (message.sender == userReceiverId) {
+            // Handle incoming messages from the current user
+            decryptAndAppendMessage(
+              message.receiverCipher,
+              createIncomingMessageContainer
+            );
+          }
+        });
+      });
+    </script>
+
+    <!-- CHAT USER HISTORY -->
+    <script>
+      // On connect it will get the current user public key
+      socket.on('detailed_chat_user_info', (data) => {
+        const chatUserContainer = document.getElementById(
+          'chat-user-container'
+        );
+
+        recipientPublicKey = forge.pki.publicKeyFromPem(
+          data.current_chat_public_key
+        );
+
+        const chatContainer = document.getElementById('chat-container');
+        const noChat = document.getElementById('no-chat');
+        const chat = document.getElementById('chat');
+        const sendMessageContainer = document.getElementById(
+          'send-message-container'
+        );
+
+        noChat.classList.add('hidden');
+        sendMessageContainer.classList.remove('hidden');
+        chatContainer.classList.remove('hidden');
+        chat.classList.remove('hidden');
+
+        chatContainer.innerHTML = ''; // Clear existing chat history
+        renderedMessage = data.render_message_count;
+        chatUserPhoto = data.chat_user_photo;
+
+        if (data.chat_history == false) {
+          updateChatHeader(data.current_chat_username, chatUserPhoto);
+
+          return;
+        }
+        // Remove the 'bg-active' class from all elements that have it
+        const elementsWithBgActive = document.querySelectorAll('.bg-active');
+        for (const element of elementsWithBgActive) {
+          element.classList.remove('bg-active');
+        }
+
+        // Add the 'bg-active' class to the chat user element with the specified 'userReceiverId'
+        const chatUserElement = document.getElementById(userReceiverId);
+        if (chatUserElement) {
+          chatUserElement.classList.add('bg-active');
+        }
+
+        if (data.chat_history) {
+          updateChatHeader(data.current_chat_username, data.chat_user_photo);
+          renderChatHistory(
+            data.chat_history,
+            data.total_message_count,
+            renderedMessage
+          );
+        }
+
+        // data.chat_history.forEach(function (message) {
+        //   if (message.sender == userReceiverId) {
+        //     // Handle outgoing messages from the current user
+        //     const decryptedMessage = decryptMessage(message.cipher);
+
+        //     const incomingMessageContainer =
+        //       createIncomingMessageContainer(decryptedMessage);
+        //     chatContainer.appendChild(incomingMessageContainer);
+        //   } else {
+        //     // Handle outgoing messages from the current user
+        //     const decryptedMessage = decryptMessage(message.cipher);
+        //     const outgoingMessageContainer =
+        //       createOutgoingMessageContainer(decryptedMessage);
+        //     chatContainer.appendChild(outgoingMessageContainer);
+        //   }
+        // });
+        setTimeout(() => {
+          scrollToBottom();
+        }, 10); // Adjust the delay as needed
+      });
+    </script>
+
+    <!--  ALL FUNCTIONS -->
+    <script>
+      function sendMessage() {
+        // Get the message value and chat container
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value;
+        if (message) {
+          const senderEncryptedMessage = encryptMessage(publicKey, message);
+          const receiverEncryptedMessage = encryptMessage(
+            recipientPublicKey,
+            message
+          );
+
+          socket.emit('send_message', {
+            userReceiverId: userReceiverId,
+            senderEncryptedMessage: senderEncryptedMessage,
+            receiverEncryptedMessage: receiverEncryptedMessage,
+          });
+          messageInput.value = '';
+        }
+      }
+
+      // Function to update the sidebar with the new message
+      function updateSidebar(sender, receiver, message) {
+        if (sender == userId) {
+          const link = document.getElementById(`${receiver}`);
+          const span = document.getElementById(`span-${receiver}`);
+          const messageElement = document.getElementById(`message-${receiver}`);
+
+          // Update the text content of message
+          messageElement.textContent = message;
+          if (span) {
+            // Update the text content of span
+            span.innerHTML = 'You:&nbsp;';
+          }
+
+          const chatUserContainer = document.getElementById(
+            'chat-user-container'
+          );
+          // Move the link as the first in chatUserContainer
+          chatUserContainer.prepend(link);
+        } else {
+          const link = document.getElementById(`${sender}`);
+          const span = document.getElementById(`span-${sender}`);
+          const messageElement = document.getElementById(`message-${sender}`);
+
+          // Update the text content of message
+          messageElement.textContent = message;
+
+          if (span) {
+            // Update the text content of span
+            span.innerHTML = '';
+          }
+
+          const chatUserContainer = document.getElementById(
+            'chat-user-container'
+          );
+          // Move the link as the first in chatUserContainer
+          chatUserContainer.prepend(link);
+        }
+      }
+
+      // Define a function to update the chat header
+      function updateChatHeader(username, image) {
+        const divElement = document.createElement('div');
+        divElement.classList.add(
+          'flex',
+          'items-center',
+          'bg-dark-2',
+          'p-6',
+          'text-gray-700',
+          'text-xl',
+          'font-bold',
+          'h-20',
+          'text-light-1'
+        );
+
+        const centeringDiv = document.createElement('div');
+        centeringDiv.classList.add('flex', 'items-center', 'justify-center');
+
+        const imageElement = document.createElement('img');
+        imageElement.src = image; // Replace with the actual image URL
+        imageElement.alt = 'User Image';
+        imageElement.classList.add('w-12', 'h-12', 'rounded-full', 'mr-3');
+
+        const usernameSpan = document.createElement('span');
+        usernameSpan.id = 'span-username';
+        usernameSpan.textContent = username;
+        usernameSpan.classList.add('font-black', 'text-xl', 'text-light-1');
+
+        centeringDiv.appendChild(imageElement);
+        centeringDiv.appendChild(usernameSpan);
+        divElement.appendChild(centeringDiv);
+
+        const existingHeader = document.querySelector('#username');
+        // Remove child of username and append the divElement
+        while (existingHeader.firstChild) {
+          existingHeader.removeChild(existingHeader.firstChild);
+        }
+        existingHeader.appendChild(divElement);
+      }
+
+      function renderAdditionalChatHistory(
+        chatHistory,
+        totalMessageCount,
+        renderedMessage
+      ) {
+        const chatContainer = document.getElementById('chat-container');
+        const showMoreButton = document.getElementById('show-more');
+        // Calculate the current scroll position before adding new messages
+        const currentScrollTop = chatContainer.scrollTop;
+        const previousScrollHeight = chatContainer.scrollHeight;
+
+        if (showMoreButton) {
+          chatContainer.removeChild(showMoreButton);
+        }
+
+        chatHistory.forEach(function (message) {
+          if (message.sender == userReceiverId) {
+            const decryptedMessage = decryptMessage(message.cipher);
+            const incomingMessageContainer =
+              createIncomingMessageContainer(decryptedMessage);
+            chatContainer.prepend(incomingMessageContainer);
+          } else {
+            const decryptedMessage = decryptMessage(message.cipher);
+            const outgoingMessageContainer =
+              createOutgoingMessageContainer(decryptedMessage);
+            chatContainer.prepend(outgoingMessageContainer);
+          }
+        });
+
+        if (renderedMessage < totalMessageCount) {
+          const showMoreElement = document.createElement('div');
+          showMoreElement.classList.add(
+            'flex',
+            'justify-center',
+            'items-center',
+            'text-light-1',
+            'cursor-pointer',
+            'mb-4'
+          );
+          showMoreElement.id = 'show-more';
+          showMoreElement.textContent = 'Show More';
+          showMoreElement.addEventListener('click', () => {
+            loadMoreMessages(renderedMessage);
+          });
+
+          // Insert the "Show More" button before the first child of chatContainer
+          chatContainer.insertBefore(showMoreElement, chatContainer.firstChild);
+
+          // Set the scroll position to maintain the previous view
+          const newScrollHeight = chatContainer.scrollHeight;
+          chatContainer.scrollTop =
+            currentScrollTop + (newScrollHeight - previousScrollHeight);
+        }
+      }
+
+      // Define a function to render the chat history
+      function renderChatHistory(
+        chatHistory,
+        totalMessageCount,
+        renderedMessage
+      ) {
+        const chatContainer = document.getElementById('chat-container');
+        chatContainer.innerHTML = '';
+
+        // Add a show more element after a 500ms delay
+        setTimeout(function () {
+          if (renderedMessage !== totalMessageCount) {
+            // Append element to chatContainer
+            const showMoreElement = document.createElement('div');
+            showMoreElement.classList.add(
+              'flex',
+              'justify-center',
+              'items-center',
+              'text-light-1',
+              'cursor-pointer',
+              'mb-4'
+            );
+            showMoreElement.id = 'show-more';
+            showMoreElement.textContent = 'Show More';
+            // Add a show more functions
+            showMoreElement.addEventListener('click', () => {
+              loadMoreMessages(renderedMessage);
+            });
+            chatContainer.prepend(showMoreElement);
+          }
+        }, 1);
+
+        chatHistory.forEach(function (message) {
+          if (message.sender == userReceiverId) {
+            // Handle outgoing messages from the current user
+            const decryptedMessage = decryptMessage(message.cipher);
+
+            const incomingMessageContainer =
+              createIncomingMessageContainer(decryptedMessage);
+            chatContainer.appendChild(incomingMessageContainer);
+          } else {
+            // Handle outgoing messages from the current user
+            const decryptedMessage = decryptMessage(message.cipher);
+            const outgoingMessageContainer =
+              createOutgoingMessageContainer(decryptedMessage);
+            chatContainer.appendChild(outgoingMessageContainer);
+          }
+        });
+
+        setTimeout(() => {
+          scrollToBottom();
+        }, 10);
+      }
+
+      function loadMoreMessages(renderedMessage) {
+        socket.emit('load_more_message', {
+          chat_user_id: userReceiverId,
+          rendered_message: renderedMessage,
+        });
+      }
+    </script>
+
+    <!-- OUTGOING AND INCOMING MESSAGE CONTAINER -->
+    <script>
+      // Function to create an outgoing message container
+      function createOutgoingMessageContainer(messageText) {
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add(
+          'flex',
+          'justify-end',
+          'mb-4',
+          'cursor-pointer'
+        );
+
+        const messageContent = document.createElement('div');
+        messageContent.classList.add(
+          'flex',
+          'max-w-96',
+          'bg-indigo-500',
+          'text-white',
+          'rounded-lg',
+          'p-3',
+          'gap-3'
+        );
+
+        const messageTextElement = document.createElement('p');
+        messageTextElement.innerText = messageText;
+
+        messageContent.appendChild(messageTextElement);
+
+        const avatarContainer = document.createElement('div');
+        avatarContainer.classList.add(
+          'w-16',
+          'h-9',
+          'rounded-full',
+          'flex',
+          'items-center',
+          'justify-center',
+          'ml-2'
+        );
+
+        const avatarImage = document.createElement('img');
+        avatarImage.src =
+          'https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+        avatarImage.alt = 'Avatar';
+        avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+
+        avatarContainer.appendChild(avatarImage);
+
+        messageContainer.appendChild(messageContent);
+        messageContainer.appendChild(avatarContainer);
+
+        return messageContainer;
+      }
+
+      // Function to create an incoming message container
+      function createIncomingMessageContainer(messageText) {
+        const incomingMessageContainer = document.createElement('div');
+        incomingMessageContainer.classList.add(
+          'flex',
+          'mb-4',
+          'cursor-pointer'
+        );
+
+        const avatarContainer = document.createElement('div');
+        avatarContainer.classList.add(
+          'w-16',
+          'h-9',
+          'rounded-full',
+          'flex',
+          'items-center',
+          'justify-center',
+          'mr-2'
+        );
+
+        const avatarImage = document.createElement('img');
+        avatarImage.src =
+          'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+        avatarImage.alt = 'User Avatar';
+        avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+
+        avatarContainer.appendChild(avatarImage);
+
+        const messageContent = document.createElement('div');
+        messageContent.classList.add(
+          'flex',
+          'max-w-96',
+          'bg-dark-4',
+          'rounded-lg',
+          'p-3',
+          'gap-3'
+        );
+
+        const messageTextElement = document.createElement('p');
+        messageTextElement.innerText = messageText;
+        messageTextElement.classList.add('text-light-1');
+
+        messageContent.appendChild(messageTextElement);
+
+        incomingMessageContainer.appendChild(avatarContainer);
+        incomingMessageContainer.appendChild(messageContent);
+
+        return incomingMessageContainer;
+      }
+    </script>
+
+    <!-- PUBLIC KEY RELATED AND ENCRYPTION DECRYPTION FUNCTION -->
+    <script>
+      let publicKey;
+      let privateKey;
+      let recipientPublicKey;
+      let renderedMessage;
+      let userReceiverId = 0;
+      let chatUserPhoto;
+
+      // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
+      let publicKeyStr = document.getElementById('publicKey').value;
+      let privateKeyStr = document.getElementById('privateKey').value;
+      let userId = document.getElementById('userId').value;
+
+      ForgeKeys();
+      function ForgeKeys() {
+        publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
+        privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
+      }
+
+      function encryptMessage(key, message) {
+        const encryptedMessage = key.encrypt(forge.util.encodeUtf8(message));
+        const base64EncryptedMessage = forge.util.encode64(encryptedMessage);
+        return base64EncryptedMessage;
+      }
+
+      function decryptMessage(message) {
+        const encryptedMessage = forge.util.decode64(message);
+        if (encryptMessage) {
+          const decryptedMessage = privateKey.decrypt(encryptedMessage);
+          return decryptedMessage;
+        } else {
+        }
+      }
+    </script>
+  </body>
+</html>

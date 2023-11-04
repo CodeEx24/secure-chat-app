@@ -93,6 +93,10 @@ def searchUsers():
 # Define the route for /username
 @chat_app_api.route('/<string:username>')
 def chat_with_user(username):
+    if request.method == 'POST':
+        # Get the form new-password and confirm-password
+        new_password = request.form['new-password']
+        confirm_password = request.form['confirm-password']
     # Retrieve the user from the database
     user = User.query.filter_by(username=username).first()
 
@@ -119,6 +123,20 @@ def fetchSecurityQuestions():
                 list_data_class_grade.append(data)
     # Return all question as json object
     return jsonify(list_data_class_grade), 200
+
+    
+# # Define the route for /username
+# @chat_app_api.route('/change/name', methods=['POST'])
+# def update_user_name(username):
+#     if request.method == 'POST':
+#         user_id = session['user_id']
+#         new_name = request.form['name']
+   
+#         result, status_code = changeUserName(new_name)
+
+#         response_data = {"result": result} if status_code == 200 else {"errors": result}
+
+#         return jsonify(response_data), status_code
 
     
     

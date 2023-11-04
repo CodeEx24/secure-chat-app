@@ -93,6 +93,14 @@ def create_app():
         user_id = session['user_id']
         return render_template('pages/home.html', private_key=private_key, public_key=public_key, user_id=user_id)
     
+    @app.route('/home3')
+    @userRequired
+    def home3():
+        private_key=session['private_key']
+        public_key=session['public_key']
+        user_id = session['user_id']
+        return render_template('pages/home3.html', private_key=private_key, public_key=public_key, user_id=user_id)
+    
     @app.route('/practice')
     @userRequired
     def practice():
