@@ -257,17 +257,40 @@ def handle_new_message(data):
             db.session.add(create_chat_user)
             db.session.commit()
             
-            # chat_user_room = f'{chat_user.id}'
+            chat_user_room = f'{chat_user.id}'
             
             chatted_user = ChattedUser.query.filter_by(sender_id=user.id, recipient_id=chat_user.id).first()
+            # Check if chatted_user_of_receiver already have ChattedUser
+            chatted_user_of_receiver = ChattedUser.query.filter_by(sender_id=chat_user.id, recipient_id=user.id).first()
+            
             messageDetails = Messages(chatted_id=chatted_user.id, timestamp=current_time, sender_ciphertext=sender_encrypted_message, receiver_ciphertext=receiver_encrypted_message)
             db.session.add(messageDetails)
             db.session.commit()
         
-            emit('message', {'sender': user_id, 'receiver': chatted_user.recipient_id, 'senderCipher': messageDetails.sender_ciphertext, 'receiverCipher': messageDetails.receiver_ciphertext, 'new_message': True}, room=room)
+            if chatted_user_of_receiver:
+                emit('message', {'sender': user_id, 'receiver': chatted_user.recipient_id, 'senderCipher': messageDetails.sender_ciphertext, 'receiverCipher': messageDetails.receiver_ciphertext}, room=room)
+            else:
+                emit('message', {'sender': user_id, 'receiver': chatted_user.recipient_id, 'senderCipher': messageDetails.sender_ciphertext, 'receiverCipher': messageDetails.receiver_ciphertext, 'new_message': True}, room=room)
+                
+                emit('message', {'sender': user_id, 'receiver': chatted_user.recipient_id, 'senderCipher': messageDetails.sender_ciphertext , 'receiverCipher': messageDetails.receiver_ciphertext , 'new_message': True, 'username': user.username, 'chat_user_photo': 'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'}, room=chat_user_room)
    
-           
-        
+# Join in the room
+@socketio.on('join_room')
+def handle_join_room(data):
+    user_id = session.get('user_id')
+    chat_user_id = data['chat_user_id']
+    
+    # Check if user_id and chat_user_id is existing in User Model
+    user = User.query.get(user_id)
+    chat_user = User.query.get(chat_user_id)
+    if user and chat_user:
+        # Check if user_id is less than chat_user_id
+        if user.id < chat_user.id:
+            room = f'{user.id}-{chat_user.id}'
+        else:
+            room = f'{chat_user.id}-{user.id}'
+        join_room(room)
+            
         
         # CONNECTED CHATS WITH USER ID
 # @socketio.on('connect')

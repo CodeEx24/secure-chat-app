@@ -635,6 +635,7 @@
             createOutgoingMessageContainer(decryptedMessage);
           chatContainer.appendChild(outgoingMessageContainer);
           if (data.new_message) {
+            console.log('USER NEW MESSAGE');
             const spanUsername = document.getElementById('span-username');
             const usernameText = spanUsername.textContent;
 
@@ -652,7 +653,7 @@
               message: data.senderCipher,
               active: true,
             };
-
+            console.log('CHAT: ', chat);
             const chatUserElement = createChatUserElement(chat);
             chatUserContainer.appendChild(chatUserElement);
           } else {
@@ -665,6 +666,9 @@
             createIncomingMessageContainer(decryptedMessage);
           chatContainer.appendChild(incomingMessageContainer);
           updateSidebar(data.sender, data.receiver, decryptedMessage);
+          if (data.new_message) {
+            console.log('RECEIVE NEW MESSAGE BUT RECEIVER ID');
+          }
           // if (data.new_message) {
           // } else {
           //   updateSidebar(data.sender, data.receiver, decryptedMessage);
@@ -672,12 +676,31 @@
         } else {
           // Handle outgoing messages from the current user
           const decryptedMessage = decryptMessage(data.receiverCipher);
-          updateSidebar(data.sender, data.receiver, decryptedMessage);
           // chatContainer.appendChild(incomingMessageContainer);
-          // if (data.new_message) {
-          // } else {
-          //   updateSidebar(data.sender, data.receiver, decryptedMessage);
-          // }
+          if (data.new_message) {
+            console.log('RECEIVE NEW MESSAGE');
+            // Emit the user to join in room
+            socket.emit('join_room', {
+              chat_user_id: data.sender,
+            });
+
+            const chat = {
+              sender_id: data.sender,
+              username: data.username,
+              chat_user_photo: data.chat_user_photo,
+              id: data.sender,
+              message: data.receiverCipher,
+              active: false,
+            };
+            // console.log('DECRYPTED MESSAGE: ', decryptMessage(chat.message));
+            const chatUserContainer = document.getElementById(
+              'chat-user-container'
+            );
+            const chatUserElement = createChatUserElement(chat);
+            chatUserContainer.prepend(chatUserElement);
+          } else {
+            updateSidebar(data.sender, data.receiver, decryptedMessage);
+          }
         }
 
         scrollToBottom();
