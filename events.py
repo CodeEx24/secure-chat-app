@@ -18,6 +18,10 @@ def handle_connect():
     user_id = session.get('user_id')
     user = User.query.get(user_id)
     
+    # This will utilize in order to receive new messages in the different user
+    user_room = f'{user_id}'
+    join_room(user_room)
+    
     list_chatted_user = []
     if user:
         chatted_user = ChattedUser.query.filter(
@@ -30,7 +34,7 @@ def handle_connect():
         
         if chatted_user:
             for chat in chatted_user:
-                print("CHAT ID: ", chat.id)
+           
                 if chat.sender_id == user_id:
                     if chat.recipient_id in [user['id'] for user in list_chatted_user]:
                         continue
@@ -79,7 +83,7 @@ def handle_connect():
                                     'chat_user_photo': 'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'
                                 }
                         else:
-                            print("ELSE WITHOUT CHAT 2")
+                         
                             dict_chat_user = {
                                 'id': chat_user.id,
                                 'username': chat_user.username,
@@ -142,7 +146,7 @@ def handle_connect():
                                         'chat_user_photo': 'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'
                                     }
                             else:
-                                print("ELSE WITHOUT CHAT 2")
+                          
                                 dict_chat_user = {
                                     'id': chat_user.id,
                                     'username': chat_user.username,
@@ -156,7 +160,7 @@ def handle_connect():
                                 }
                             
                             list_chatted_user.append(dict_chat_user)
-            print('list_chatted_user: ', list_chatted_user)
+            
             # Sort the list based on the timestamp in descending order
             sort_chatted_user = sorted(list_chatted_user, key=lambda x: x['timestamp'], reverse=True)
             emit('chat_details', {'chat_user': sort_chatted_user, 'user_id': user_id, 'name': user.name, 'email': user.email, 'username': user.username})
@@ -252,6 +256,8 @@ def handle_new_message(data):
             create_chat_user = ChattedUser(sender_id=user.id, recipient_id=chat_user.id)
             db.session.add(create_chat_user)
             db.session.commit()
+            
+            # chat_user_room = f'{chat_user.id}'
             
             chatted_user = ChattedUser.query.filter_by(sender_id=user.id, recipient_id=chat_user.id).first()
             messageDetails = Messages(chatted_id=chatted_user.id, timestamp=current_time, sender_ciphertext=sender_encrypted_message, receiver_ciphertext=receiver_encrypted_message)

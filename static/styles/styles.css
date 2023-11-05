@@ -1,0 +1,56 @@
+html {
+  scroll-behavior: smooth;
+  position: relative;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+/* Change text color for success notifications */
+.notyf .notyf__toast--success {
+  color: #6366f1;
+}
+
+/* Change text color for error notifications */
+.notyf .notyf__toast--error {
+  color: rgb(245, 57, 57);
+}
+
+.notyf__icon--success {
+  background: #6366f1;
+}
+
+.notyf__icon--error {
+  background: rgb(245, 57, 57);
+}
+/* Customize the scrollbar track */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Customize the scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background-color: #6366f1;
+  border-radius: 6px;
+}
+
+/* Customize the scrollbar track */
+::-webkit-scrollbar-track {
+  background-color: rgb(245, 57, 57);
+  border-radius: 6px;
+}
+
+/* Add this CSS to your stylesheet or in a <style> tag in your HTML document */
+.message-bottom {
+  /* Set a fixed height to the chat messages container */
+  height: 100vh; /* Adjust the height as needed */
+  overflow: hidden; /* Hide the scrollbar */
+}
+
+.message-bottom::-webkit-scrollbar-thumb {
+  background-color: transparent; /* Hide the scrollbar thumb */
+}
+
+#chat-container {
+  height: 100%; /* Set a fixed height */
+  overflow-y: auto; /* Enable vertical scrolling */
+}

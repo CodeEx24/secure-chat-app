@@ -397,33 +397,109 @@ def retrieve_chat_history(sender_id, recipient_id, rendered_message=0, reverse=F
 
         
         
-# def changeUserName(user_id, name):
-#     # Query the user id
-#     user = User.query.filter_by(id=user_id).first()
+def changeUserName(user_id, fullname):
+    # Query the user id
+    user = User.query.filter_by(id=user_id).first()
     
-#     if user:
-#         # Filter the users, excluding the current user's username
-#         users_query = User.query.filter(
-#             User.username.ilike(f'%{query_username}%'),
-#             User.username != username
-#         ).limit(10)
+    if user:
+        if fullname:
+            # Validate the username format (no spaces, only underscores allowed)
+            fullname_pattern = re.compile(r'^[a-zA-Z\s]+$')
+            if not fullname_pattern.match(fullname):
+                return "Special characters are not allowed", 400
 
-#         # Execute the query to fetch the results
-#         users = users_query.all()
+            # Update user name
+            user.name = fullname
+            db.session.commit()
+            return "Successfully updated", 200
+    else:
+        return "User not found", 400
 
-#         if users: 
-#             # For loop the users and return the user as an object 
-#             users_list = [{"id": user.id, "username": user.username} for user in users]
-#             return users_list, 200
-#         else:
-#             return "No users found", 400
-#     else:
-#         # Return "Please type to search"
-#         return "Please type to search", 400        
+def changeUserUsername(user_id, username):
+    # Query the user id
+    user = User.query.filter_by(id=user_id).first()
+    
+    if user:            
+        if username:
+            if not re.match(r'^[a-zA-Z0-9_]+$', username):
+                return "Special characters and spaces are not allowed", 400
+            else:
+                existing_username = User.query.filter_by(username=username).first()
+                if existing_username:
+                    return "Username already exists", 400
+                else:
+                    # Change the username and save to the database
+                    user.username = username
+                    db.session.commit()
+                    return "Successfully updated", 200
+        else:
+            return "Username is required", 400
+    else:
+        return "User not found", 400
+    
 
+def changePasswordF(user_id, password, new_password, confirm_password):
+    # Query the user id
+    user = User.query.filter_by(id=user_id).first()
+    
+    if user:
+        error_messages = []
+        password_pattern = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$')
+        # Check if password exists, then append the error message
+        if not password:
+            error_messages.append({"message": "Password is required", "type": "password"})
 
-    #     sendChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userSendMessages.id)
-    #     recieveChatHistory = db.session.query(Messages).filter(Messages.chatted_id == userRecieveMessages.id)
+        # Validate the password
+        if new_password:
+            if not password_pattern.match(new_password):
+                error_messages.append({"message": "New Password must contain at least one uppercase letter, one lowercase letter, and one digit.", "type": "newPassword"})
+            elif len(new_password) < 8:
+                error_messages.append({"message": "New Password must be at least 8 characters long.", "type": "newPassword"})
+        else:
+            error_messages.append({"message": "New Password is required", "type": "newPassword"})
+
+        if confirm_password: 
+            if not password_pattern.match(confirm_password):
+                error_messages.append({"message": "Confirm Password must contain at least one uppercase letter, one lowercase letter, and one digit.", "type": "confirmPassword"})
+            elif len(confirm_password) < 8:
+                error_messages.append({"message": "Confirm Password must be at least 8 characters long.", "type": "confirmPassword"})
+        else:
+            error_messages.append({"message": "Confirm password is required", "type": "confirmPassword"})
+
+        # Check if error_messages array doesn't contain "password" or "confirmPassword" types
+        has_password_or_confirm_password_error = any(error.get("type") in ["newPassword", "confirmPassword"] for error in error_messages)
+
+        if not has_password_or_confirm_password_error:
+            if new_password and confirm_password and new_password != confirm_password:
+                error_messages.append({"message": "Password do not match", "type": "password-not-match"})
+
+        if error_messages:
+            return error_messages, 400
+        else:
+            # Update the user password
+            if check_password_hash(user.password, password):
+                hashed_password = generate_password_hash(new_password)
+                user.password = hashed_password
+                db.session.commit()
+                return "Change password successfully updated", 200
+            else:
+                return "Password change failed. Please try again", 400
+
+            # # query a user that match the token
+            # user = User.query.filter_by(u=token).first()
+            
+            # # if statement for user and check the token expiration is greater that now
+            # if user and user.token_expiration > datetime.now():
+            #     # update the password and token
+            #     hashed_password = generate_password_hash(new_password)
+            #     user.password = hashed_password
+            #     user.token = None
+            #     user.token_expiration = None
+            #     db.session.commit()
+            #     return 'Password successfully reset', 200
+            # else:
+            #     return 'Invalid or expired token', 400
+
         
         
     # else:

@@ -1,0 +1,72 @@
+<!-- NAME MODAL CONTAINER -->
+<div
+  id="fullnameModal"
+  class="fixed inset-0 flex items-center justify-center z-50 hidden"
+>
+  <div
+    class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"
+  ></div>
+
+  <div
+    class="modal-container w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto"
+  >
+    <div class="modal-content bg-dark-3 py-8 text-left px-8">
+      <!-- Modal header -->
+      <div class="modal-header">
+        <h3 class="text-white text-2xl font-semibold">Change Name</h3>
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body py-4 flex flex-col">
+        <p class="text-white text-md font-bold mb-4">
+          Name:
+          <span id="change-modal-fullname" class="font-semibold"></span>
+        </p>
+        <div class="relative z-0 w-full mb-6 group mt-2">
+          <input
+            type="text"
+            name="fullname"
+            id="fullname-input"
+            class="block py-2.5 px-2 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-[#6366f1] focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+            placeholder=" "
+            required
+          />
+          <label
+            for="fullname-input"
+            class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-[#6366f1] peer-focus:dark:text-[#6366f1] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+            >Full Name</label
+          >
+          <p
+            class="text-red-600 text-sm mt-4 font-semibold"
+            id="fullname-error"
+          ></p>
+        </div>
+
+        <div class="flex justify-end items-center gap-4">
+          <button
+            class="bg-[#6366f1] hover:bg-opacity-80 text-white font-semibold py-2 px-4 rounded"
+            onclick="saveName()"
+          >
+            Save
+          </button>
+          <button
+            class="bg-red-500 hover:bg-opacity-80 text-white font-semibold py-2 px-4 rounded"
+            onclick="closeFullnameModal()"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer py-4 hidden">
+        <button
+          id="close-modal"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -5,7 +5,7 @@ from models import User, db, Question
 
 # from decorators.auth_decorators import role_required
 
-from .utils import registerUser, sendResetPasswordEmail, resetPassword, loginUser, getUsernameList
+from .utils import registerUser, sendResetPasswordEmail, resetPassword, loginUser, getUsernameList, changeUserName, changeUserUsername, changePasswordF
 from datetime import datetime, timedelta
 from flask_mail import Message
 from extensions import mail  # Import mail from the mail.py module
@@ -28,7 +28,7 @@ def login():
 
         result, status_code = loginUser(username, password)
         response_data = {"result": result} if status_code == 200 else {"errors": result}
-        print(response_data)
+     
         return jsonify(response_data), status_code
 
         
@@ -37,7 +37,7 @@ def register():
     if request.method == 'POST':
         
         data = request.form  # Get the form data as a dictionary
-        print("data: ", data)
+
         result, status_code = registerUser(**data)
 
         response_data = {"result": result} if status_code == 200 else {"errors": result}
@@ -46,7 +46,7 @@ def register():
 
 @chat_app_api.route('/reset_password', methods=['POST'])
 def forgotPasswordRequest():
-    print("INSIDE HERE:")
+
     if request.method == 'POST':
         email = request.form['email']
          # Call the registerUser function to handle registration
@@ -125,20 +125,52 @@ def fetchSecurityQuestions():
     return jsonify(list_data_class_grade), 200
 
     
-# # Define the route for /username
-# @chat_app_api.route('/change/name', methods=['POST'])
-# def update_user_name(username):
-#     if request.method == 'POST':
-#         user_id = session['user_id']
-#         new_name = request.form['name']
+# Define the route for /username
+@chat_app_api.route('/change/name', methods=['GET', 'POST'])
+def updateUserName():
+
+    if request.method == 'POST':
+        data = request.get_json()
+        print('data: ', data)
+        user_id = session['user_id']
+        print("user_id: ", user_id)
+        fullname = data['fullname']
+        print("fullname: ", fullname)
    
-#         result, status_code = changeUserName(new_name)
+   
+        result, status_code = changeUserName(user_id ,fullname)
 
-#         response_data = {"result": result} if status_code == 200 else {"errors": result}
+        response_data = {"result": result} if status_code == 200 else {"error": result}
 
-#         return jsonify(response_data), status_code
+        return jsonify(response_data), status_code
+
+# Define the route for /username
+@chat_app_api.route('/change/username', methods=['GET', 'POST'])
+def updateUserUsername():
+    if request.method == 'POST':
+        data = request.get_json() 
+        user_id = session['user_id']  
+        username = data['username']   
+   
+        result, status_code = changeUserUsername(user_id ,username)
+        response_data = {"result": result} if status_code == 200 else {"error": result}
+        return jsonify(response_data), status_code
 
     
+# Define the route for /username
+@chat_app_api.route('/change/password', methods=['GET', 'POST'])
+def changePassword():
+    if request.method == 'POST':
+        data = request.get_json() 
+        user_id = session['user_id']  
+        current_password = data['currentPassword']   
+        new_password = data['newPassword']  
+        confirm_password = data['confirmPassword']  
+   
+        result, status_code = changePasswordF(user_id ,current_password, new_password, confirm_password)
+        response_data = {"result": result} if status_code == 200 else {"errors": result}
+        return jsonify(response_data), status_code
+
     
 # Define the route for /username
 @chat_app_api.route('/get_rsa_keys')
