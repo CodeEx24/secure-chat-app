@@ -17,11 +17,35 @@
 
       <!-- Modal body -->
       <div class="modal-body py-4 flex flex-col">
-        <img
-          src="https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3"
-          alt="User Image"
-          class="w-32 h-32 mx-auto rounded-full"
-        />
+        <div class="relative flex items-center justify-center">
+          <div class="flex items-center w-32 h-32">
+            <img
+              src="https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&amp;t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3"
+              alt="User Image"
+              class="w-full mx-auto rounded-full"
+            />
+            <!-- <button
+              onclick="openProfileModal()"
+              class="bg-blue-500 text-white rounded-full p-2 w-10 h-10 absolute -bottom-[-2px] ml-[90px]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                ></path>
+              </svg>
+            </button> -->
+          </div>
+        </div>
+
         <button
           class="flex justify-between items-center mt-6 hover:bg-dark-2 px-6 py-4"
           onclick="openNameModal()"
