@@ -2,9 +2,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect
 from flask_login import UserMixin
 
-# from data.user import user_data
-# from data.chatted_user import chatted_user_data
-# from data.question import question_data
+from data.user import user_data
+from data.chatted_user import chatted_user_data
+from data.question import question_data
 
 
 db = SQLAlchemy()
@@ -86,25 +86,25 @@ class Question(db.Model):
 
 def init_db(app):
     db.init_app(app)
-#     with app.app_context():
-#         inspector = inspect(db.engine)
-#         if not inspector.has_table('Users'):
-#             db.create_all()
-#             create_sample_data()
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if not inspector.has_table('Users'):
+            db.create_all()
+            create_sample_data()
             
-# def create_sample_data():
-#     for data in user_data:
-#         user = User(**data)
-#         db.session.add(user)
-#         db.session.flush()
+def create_sample_data():
+    # for data in user_data:
+    #     user = User(**data)
+    #     db.session.add(user)
+    #     db.session.flush()
         
-#     for chatted in chatted_user_data:
-#         chatted_user = ChattedUser(**chatted)
-#         db.session.add(chatted_user)
-#         db.session.flush()
+    # for chatted in chatted_user_data:
+    #     chatted_user = ChattedUser(**chatted)
+    #     db.session.add(chatted_user)
+    #     db.session.flush()
         
-#     for question in question_data:
-#         question = Question(**question)
-#         db.session.add(question)
-#         db.session.flush()
-#     db.session.commit()
+    for question in question_data:
+        question = Question(**question)
+        db.session.add(question)
+        db.session.flush()
+    db.session.commit()
