@@ -112,7 +112,11 @@ def loginUser( username, password):
     
 
     user = User.query.filter_by(username=username).first()
-    if user and check_password_hash(user.password, password):
+    
+    if not user:
+        error_messages.append({"message": "Invalid email or password", "type": "invalid"})
+    
+    elif user and check_password_hash(user.password, password):
 
         user_key = UserKey.query.filter_by(user_id=user.id).first()
         user_sq = SecurityQuestion.query.filter_by(user_id=user.id).first()

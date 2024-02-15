@@ -35,7 +35,7 @@ def create_app():
     app.config['MAIL_USE_TLS'] = False
     app.config['MAIL_USE_SSL'] = True
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI")
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['TEMPLATES_AUTO_RELOAD'] = True 
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
