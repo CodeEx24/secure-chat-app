@@ -1,890 +1,1313 @@
-{% extends "base/layout.html" %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+    <!-- Notyf -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css"
+    />
 
-<!-- TITLE -->
-{% block title %} {% endblock title %}
-
-<!-- CONTENT -->
-{% block content %}
-<script
-  src="https://cdn.socket.io/4.6.0/socket.io.min.js"
-  integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
-  crossorigin="anonymous"
-></script>
-
-<div class="flex h-screen overflow-hidden">
-  <!-- Sidebar -->
-  <div class="w-1/4 bg-white border-r border-gray-700">
-    <!-- Sidebar Header -->
-    <header
-      class="p-6 h-20 border-b border-gray-700 flex justify-between items-center bg-dark-2 text-white"
-    >
-      <div class="relative">
-        <!-- <button
-          class="flex items-center justify-center w-8 h-8 p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:bg-gray-300 transition duration-300"
-        ></button> -->
-        <button
-          id="menuButton"
-          class="focus:outline-none flex items-center justify-center w-8 h-8 p-2 rounded-md focus:outline-none transition duration-300"
-        >
-          <span class="sr-only">Open menu</span>
-          <svg
-            class="w-4 h-4 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            ></path>
-          </svg>
-        </button>
-        <!-- Menu Dropdown -->
-        <div
-          id="menuDropdown"
-          class="absolute left-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg hidden"
-        >
-          <input type="hidden" id="publicKey" value="{{ public_key }}" />
-          <input type="hidden" id="privateKey" value="{{ private_key }}" />
-          <ul class="py-2 px-3">
-            <li>
-              <a
-                href="#"
-                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
-                >Profile</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
-                >Account Settings</a
-              >
-            </li>
-            <li>
-              <a
-                href="{{ url_for('logout') }}"
-                class="block px-4 py-2 text-gray-800 hover:text-white hover:bg-gray-400"
-                >Logout</a
-              >
-            </li>
-            <!-- Add more menu options here -->
-          </ul>
-        </div>
-      </div>
-      <div class="flex items-center justify-center">
-        <input
-          id="searchInput"
-          type="text"
-          class="px-4 py-1 bg-dark-3 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Search..."
-        />
-        <div
-          class="search-results-dropdown hidden absolute top-16 left-40 bg-white border border-light-3 shadow-md max-h-40 z-50 w-72 rounded-lg"
-        >
-          <!-- Search result items will be appended here -->
-        </div>
-      </div>
-      <input type="hidden" id="publicKey" value="{{ public_key }}" />
-      <input type="hidden" id="privateKey" value="{{ private_key }}" />
-      <input type="hidden" id="userId" value="{{ user_id }}" />
-    </header>
-
-    <!-- Contact List -->
-    <div
-      class="overflow-y-auto h-screen mb-9 pb-20 bg-dark-2"
-      id="chat-user-container"
-    >
-      <!-- <div class="flex items-center cursor-pointer hover:bg-dark-3 p-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3"></div>
-      </div> -->
-    </div>
-  </div>
-
-  <!-- Main Chat Area -->
-
-  <!-- Selected Chats -->
-  <div class="flex-1 hidden" id="chat">
-    <!-- Chat Header -->
-    <div id="username"></div>
-
-    <!-- Chat Messages CHART CONTAINER-->
-    <div
-      id="chat-container"
-      class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom"
-    ></div>
-
-    <!-- Chat Input -->
-    <footer
-      class="bg-dark-3 border-t border-gray-700 p-4 absolute bottom-0 w-3/4"
-    >
-      <div class="flex items-center">
-        <input
-          type="text"
-          id="message-input"
-          placeholder="Type a message..."
-          class="w-full p-2 text-light-1 bg-dark-4 rounded-md border border-gray-800 focus:outline-none focus:border-blue-500"
-        />
-        <button
-          class="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2"
-          onclick="sendMessage()"
-        >
-          Send
-        </button>
-      </div>
-    </footer>
-  </div>
-
-  <!-- No selected Chats -->
-  <div class="flex-1" id="no-chat">
-    <div
-      id="no-chat-container"
-      class="h-screen overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom flex justify-center items-center"
-    >
-      <p class="text-light-1 p-2 bg-dark-3 rounded-lg">
-        Select or search a user to start messaging
-      </p>
-    </div>
-  </div>
-</div>
-{% endblock content %}
-
-<!-- SCRIPTS -->
-{% block script %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
-
-<!-- SEND MESSAGES TRIGGER ON ENTER -->
-<script>
-  // Listen for Enter key press in the message input
-  document
-    .getElementById('message-input')
-    .addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') {
-        sendMessage(); // Trigger the send button's click event
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap"
+    />
+    <style>
+      /* CSS for applying Poppins font */
+      body {
+        font-family: 'Poppins', sans-serif;
       }
-    });
+    </style>
 
-  // Get the chat messages container
-  const chatMessages = document.querySelector('.message-bottom');
-
-  // Scroll to the end of the chat messages
-  function scrollToBottom() {
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-
-  scrollToBottom();
-</script>
-
-<!-- Menu button dropdown (Header) -->
-<script>
-  const menuButton = document.getElementById('menuButton');
-  const menuDropdown = document.getElementById('menuDropdown');
-
-  menuButton.addEventListener('click', () => {
-    if (menuDropdown.classList.contains('hidden')) {
-      menuDropdown.classList.remove('hidden');
-    } else {
-      menuDropdown.classList.add('hidden');
-    }
-  });
-
-  // Close the menu if you click outside of it
-  document.addEventListener('click', (e) => {
-    if (!menuDropdown.contains(e.target) && !menuButton.contains(e.target)) {
-      menuDropdown.classList.add('hidden');
-    }
-  });
-</script>
-
-<!-- SEARCH FUNCTIONS FETCH -->
-<script>
-  // Get the search input and search results container
-  const searchInput = document.getElementById('searchInput');
-  const searchResultsDropdown = document.querySelector(
-    '.search-results-dropdown'
-  );
-  // Construct the base URL with the '/api/v1' prefix
-  const baseUrl = "{{ url_for('chat_app_api.searchUsers') }}";
-
-  // Function to make a request to the server with the user's input
-  function searchUsers(query) {
-    // Combine the base URL with the query parameter
-    const apiUrl = baseUrl + `?query=${query}`;
-    fetch(apiUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        // Clear previous search results
-        searchResultsDropdown.innerHTML = '';
-
-        if (data.result) {
-          // Loop through the search results and render them
-          data.result.forEach((result) => {
-            const resultElement = document.createElement('button');
-
-            // resultElement.href = `/api/v1/${result.username}`;
-            resultElement.onclick = function () {
-              fetchChatDetails(result.id, result.username);
-            };
-            resultElement.className =
-              'bg-dark-3 w-full px-4 py-2 flex gap-4 border-b border-gray-800';
-
-            // Create and append the child elements with your specified structure
-            const imgElement = document.createElement('img');
-            imgElement.src =
-              'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
-            imgElement.alt = 'User Avatar';
-            imgElement.className = 'w-12 h-12 rounded-full';
-
-            const userTextElement = document.createElement('div');
-
-            const userNameElement = document.createElement('h2');
-            userNameElement.className = 'text-lg text-light-1 font-inter';
-            userNameElement.textContent = `@${result.username}`;
-
-            const userDescriptionElement = document.createElement('p');
-            userDescriptionElement.className =
-              'text-light-2 text-sm line-clamp-1';
-            userDescriptionElement.textContent = 'Hoorayy!!';
-
-            // Append child elements to resultElement
-            userTextElement.appendChild(userNameElement);
-            userTextElement.appendChild(userDescriptionElement);
-
-            resultElement.appendChild(imgElement);
-            resultElement.appendChild(userTextElement);
-
-            // Append the resultElement to searchResultsDropdown
-            searchResultsDropdown.appendChild(resultElement);
-          });
-        } else {
-          // Create a message element for no results
-          const noResultsMessage = document.createElement('div');
-          noResultsMessage.className = 'bg-dark-3 w-full px-4 py-4 flex gap-4';
-          noResultsMessage.textContent = 'No Users Found';
-
-          // Append the message to searchResultsDropdown
-          searchResultsDropdown.appendChild(noResultsMessage);
-        }
-
-        // Show the search results container
-        searchResultsDropdown.classList.remove('hidden');
-      })
-      .catch((error) => {});
-  }
-
-  function fetchChatDetails(id, username) {
-    searchResultsDropdown.classList.add('hidden');
-    // Send the message and reciever username
-    userReceiverId = id;
-    socket.emit('chat_history', {
-      chat_user_id: userReceiverId,
-      chat_username: username,
-    });
-  }
-
-  // Handle input events in the search input (for real-time search)
-  searchInput.addEventListener('input', (event) => {
-    const query = searchInput.value.trim();
-
-    if (query.length > 0) {
-      searchUsers(query);
-    } else {
-      // If the search input is empty, hide the search results
-      searchResultsDropdown.innerHTML = '';
-      searchResultsDropdown.classList.add('hidden');
-    }
-  });
-
-  // Close the search results when clicking outside the search input and results container
-  document.addEventListener('click', (e) => {
-    if (
-      !searchInput.contains(e.target) &&
-      !searchResultsDropdown.contains(e.target)
-    ) {
-      searchResultsDropdown.innerHTML = '';
-      searchResultsDropdown.classList.add('hidden');
-    }
-  });
-
-  // Function to handle the focus event on the search input
-  searchInput.addEventListener('focus', (event) => {
-    // Check if the input is not empty and trigger the search again
-    const query = searchInput.value.trim();
-
-    if (query.length > 0) {
-      searchUsers(query);
-    }
-  });
-</script>
-
-<!-- SOCKETIO -->
-<script>
-  const socket = io();
-
-  // I want to get the connect data here
-  socket.on('connect', () => {});
-
-  const chatContainer = document.getElementById('chat-container');
-  // Get the last ellement in my url
-  const url = window.location.href;
-  const urlArray = url.split('/');
-  const receiver_username = urlArray[urlArray.length - 1];
-
-  // SENDING MESSAGES
-  socket.on('message', function (data) {
-    const chatContainer = document.getElementById('chat-container');
-    if (data.sender == userId) {
-      // Handle outgoing messages from the current user
-      const decryptedMessage = decryptMessage(data.senderCipher);
-      const outgoingMessageContainer =
-        createOutgoingMessageContainer(decryptedMessage);
-      chatContainer.appendChild(outgoingMessageContainer);
-      updateSidebar(data.sender, data.receiver, decryptedMessage);
-    } else if (data.sender == userReceiverId) {
-      // Handle outgoing messages from the current user
-      const decryptedMessage = decryptMessage(data.receiverCipher);
-      const incomingMessageContainer =
-        createIncomingMessageContainer(decryptedMessage);
-      chatContainer.appendChild(incomingMessageContainer);
-
-      updateSidebar(data.sender, data.receiver, decryptedMessage);
-    } else {
-      // Handle outgoing messages from the current user
-      const decryptedMessage = decryptMessage(data.receiverCipher);
-
-      updateSidebar(data.sender, data.receiver, decryptedMessage);
-    }
-
-    scrollToBottom();
-  });
-
-  // On connect, it will get the current user public key
-  socket.on('chat_details', (data) => {
-    const chatUserContainer = document.getElementById('chat-user-container'); // Replace 'chat-user-container' with the ID of your container element
-
-    // Remove any existing chat user links
-    while (chatUserContainer.firstChild) {
-      chatUserContainer.removeChild(chatUserContainer.firstChild);
-    }
-
-    data.chat_user.forEach((chat) => {
-      console.log('CHAT: ', chat);
-      // Create the HTML structure for each chat user
-      const chatUserElement = document.createElement('button'); // Wrap the div in an anchor tag
-      chatUserElement.id = chat.id;
-      chatUserElement.href = `/chat/${chat.id}`; // Set the link's URL based on chat.id
-      // resultElement.href = `/api/v1/${result.username}`;
-      chatUserElement.onclick = function () {
-        fetchChatDetails(chat.id, chat.username);
+    <title>{% block title %} {% endblock title %}</title>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'dark-1': '#0A0E0F', // Main Backgroud of chat
+              'dark-2': '#171B1D', // Background of sidebar
+              'dark-3': '#202426', // Search
+              'dark-4': '#252B2E', // Chat
+              'light-1': '#FFFFFF', // Text white
+              'light-2': '#697C89', // Sub descriotion/chat
+              'light-3': '#5C5C7B', // Icons?
+              primary: '#48A6C3',
+              danger: '#ef4444',
+              active: '#252B2E',
+            },
+            // fontFamily: {
+            //   sans: ['Inter', 'sans'],
+            // },
+          },
+        },
       };
-      chatUserElement.classList.add(
-        'flex',
-        'items-center',
-        'cursor-pointer',
-        'hover:bg-dark-3',
-        'p-4',
-        'bg-active',
-        'w-full'
-      );
+    </script>
 
-      const avatarDiv = document.createElement('div');
-      avatarDiv.classList.add(
-        'w-12',
-        'h-12',
-        'bg-gray-300',
-        'rounded-full',
-        'mr-3'
-      );
-      const avatarImg = document.createElement('img');
-      avatarImg.src =
-        'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'; // Replace with the absolute image URL
-      avatarImg.alt = 'User Avatar';
-      avatarImg.classList.add('w-12', 'h-12', 'rounded-full');
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles/styles.css') }}"
+    />
+    <!-- Link to your external CSS file -->
 
-      avatarDiv.appendChild(avatarImg);
+    {% block styles %} {% endblock styles %}
+  </head>
+  <body class="bg-slate-200 h-screen">
+    <div class="h-screen flex flex-col justify-between">
+      <!-- PROFILE MODAL -->
+      {% include 'components/profileModal.html' %}
+      <!-- FULL NAME MODAL -->
+      {% include 'components/fullnameModal.html' %}
+      <!-- USERNAME MODAL -->
+      {% include 'components/usernameModal.html' %}
+      <!-- EMAIL MODAL -->
+      {% include 'components/emailModal.html' %}
+      <!-- CHANGE PASSWORD MODAL -->
+      {% include 'components/changePasswordModal.html' %}
+      <!-- SIDEBAR -->
+      {% include 'components/sidebar.html' %}
 
-      const contentDiv = document.createElement('div');
-      contentDiv.classList.add('flex-1');
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('flex');
-      const usernameH2 = document.createElement('h2');
-      usernameH2.classList.add(
-        'text-lg',
-        'text-light-1',
-        'font-inter',
-        'text-left'
-      );
-      usernameH2.textContent = chat.username;
-      // Check if data.user_id is equal to chat.sender_id, then add "You: " at the start of the message in which 'You' is inside a <span> tag and bold
-      const messageContainer = document.createElement('div');
-      messageContainer.classList.add('flex', 'gap-2', 'items-center');
+      <div class="lg:ml-[440px] md:ml-80">
+        <div class="grid grid-cols-1 lg:grid-cols-2 h-screen" id="chat">
+          <!-- Main Chat Area -->
+          <div class="col-span-1 lg:col-span-2 h-screen bg-dark-1">
+            <!-- Selected Chats -->
+            <div class="overflow-y-auto flex flex-col justify-between h-screen">
+              <!-- Chat Header -->
+              <div class="flex justify-between w-full">
+                <div
+                  id="username"
+                  class="h-1/12 md:w-full w-10/12 bg-dark-2"
+                ></div>
+                <div
+                  class="flex items-center justify-center bg-dark-2 lg:p-0 p-4 md:hidden w-2/12"
+                >
+                  <button
+                    data-drawer-target="default-sidebar"
+                    data-drawer-open="default-sidebar"
+                    aria-controls="default-sidebar"
+                    type="button"
+                    class="text-gray-600 hover:text-gray-800 focus:outline-none md:hidden"
+                  >
+                    <span class="sr-only">Open sidebar</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      viewBox="0 0 24 24"
+                      class="w-[20px] h-[20px]"
+                    >
+                      <path d="M3 12h18M3 6h18M3 18h18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
 
-      if (data.user_id == chat.sender_id) {
-        const span = document.createElement('span');
-        span.classList.add('font-black', 'text-sm', 'text-light-2');
-        span.innerHTML = 'You:&nbsp;';
-        messageDiv.appendChild(span);
-      }
+              <div class="flex h-screen" id="no-chat">
+                <div
+                  id="no-chat-container"
+                  class="w-full overflow-y-auto p-4 pb-40 bg-dark-1 message-bottom flex justify-center items-center"
+                >
+                  <p class="text-light-1 p-2 bg-dark-3 rounded-lg">
+                    Select or search a user to start messaging
+                  </p>
+                </div>
+              </div>
 
-      const messageP = document.createElement('p');
-      messageP.classList.add('text-light-2', 'text-sm', 'line-clamp-1');
-      messageP.id = `message-${chat.id}`;
-      messageP.textContent = decryptMessage(chat.message);
+              <!-- Chat Messages CHART CONTAINER-->
+              <div
+                id="chat-container"
+                class="h-full p-4 bg-dark-1 message-bottom overflow-y-auto hidden"
+              ></div>
 
-      messageDiv.appendChild(messageP);
+              <!-- Chat Input -->
+              <footer
+                class="flex items-center bg-dark-3 border-t border-gray-700 p-4 relative w-full bottom-0 hidden"
+                id="send-message-container"
+              >
+                <div class="flex items-center w-full">
+                  <input
+                    type="text"
+                    id="message-input"
+                    placeholder="Type a message..."
+                    class="w-full p-2 text-light-1 bg-dark-4 rounded-md border border-gray-800 focus:outline-none focus:border-blue-500"
+                  />
+                  <button
+                    class="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2"
+                    onclick="sendMessage()"
+                  >
+                    Send
+                  </button>
+                </div>
+              </footer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- CONTENT -->
+    {% block content %} {% endblock content %}
 
-      contentDiv.appendChild(usernameH2);
-      contentDiv.appendChild(messageDiv);
-      chatUserElement.appendChild(avatarDiv);
-      chatUserElement.appendChild(contentDiv);
+    <!-- NOTYF JS -->
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script src="{{ url_for('static', filename='js/notyf.js') }}"></script>
 
-      // Append the chat user link to the container
-      chatUserContainer.appendChild(chatUserElement);
-    });
-  });
+    <script>
+      // Common function to save data
+      function saveData(inputElementId, apiUrl, dataKey, errorElementId) {
+        const input = document.getElementById(inputElementId);
+        const errorElement = document.getElementById(errorElementId);
+        const inputValue = input.value;
 
-  socket.on('load_messages', function (data) {
-    renderedMessage = data.render_message_count;
-    console.log('renderedMessage: ', renderedMessage);
-    renderAdditionalChatHistory(
-      data.chat_history,
-      data.total_message_count,
-      renderedMessage
-    );
-    const chatContainer = document.getElementById('chat-container');
+        if (!inputValue) {
+          errorElement.innerText = `The ${dataKey} must not be empty`;
+        } else {
+          fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ [dataKey]: inputValue }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.result) {
+                const nameDisplay = document.getElementById(
+                  `${dataKey}-display`
+                );
+                nameDisplay.innerText = inputValue;
 
-    // Define an asynchronous function to decrypt a message
-    async function decryptAndAppendMessage(cipher, createMessageContainer) {
-      if (cipher) {
-        try {
-          const decryptedMessage = await decryptMessage(cipher);
-          const messageContainer = createMessageContainer(decryptedMessage);
-          chatContainer.prepend(messageContainer);
-        } catch (error) {
-          console.error('Error decrypting message:', error);
+                const changeModalName = document.getElementById(
+                  `change-modal-${dataKey}`
+                );
+
+                changeModalName.innerText = inputValue; // Update the name based on the response data
+
+                notyf.success(data.result);
+
+                if (dataKey == 'fullname') {
+                  closeFullnameModal();
+                } else {
+                  closeUsernameModal();
+                }
+              } else {
+                errorElement.innerText = data.error;
+              }
+            });
         }
       }
-    }
 
-    data.chat_history.forEach(function (message) {
-      if (message.sender == userId) {
-        // Handle outgoing messages from the current user
-        decryptAndAppendMessage(
-          message.senderCipher,
-          createOutgoingMessageContainer
-        );
-      } else if (message.sender == userReceiverId) {
-        // Handle incoming messages from the current user
-        decryptAndAppendMessage(
-          message.receiverCipher,
-          createIncomingMessageContainer
+      // saveName function
+      function saveName() {
+        saveData(
+          'fullname-input',
+          "{{ url_for('chat_app_api.updateUserName') }}",
+          'fullname',
+          'fullname-error'
         );
       }
-    });
-  });
-</script>
 
-<!-- CHAT USER HISTORY -->
-<script>
-  // On connect it will get the current user public key
-  socket.on('chat_user', (data) => {
-    console.log('DATA: ', data.chat_history);
-    renderedMessage = data.render_message_count;
-    console.log('renderedMessage: ', renderedMessage);
-    if (data.chat_history) {
-      updateChatHeader(
-        data.current_chat_username,
-        'https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg?w=826&t=st=1698739208~exp=1698739808~hmac=9df91192abe8f8c2ad07c446f939ed2b08e2dd7561df3636aba7bc8df7447fe3'
-      );
-      renderChatHistory(
-        data.chat_history,
-        data.total_message_count,
-        renderedMessage
-      );
-    }
-
-    const chatUserContainer = document.getElementById('chat-user-container');
-
-    recipientPublicKey = forge.pki.publicKeyFromPem(
-      data.current_chat_public_key
-    );
-
-    const chatContainer = document.getElementById('chat-container');
-    const noChat = document.getElementById('no-chat');
-    const chat = document.getElementById('chat');
-
-    noChat.classList.add('hidden');
-    chat.classList.remove('hidden');
-
-    chatContainer.innerHTML = ''; // Clear existing chat history
-    data.chat_history.forEach(function (message) {
-      if (message.sender == userReceiverId) {
-        // Handle outgoing messages from the current user
-        const decryptedMessage = decryptMessage(message.cipher);
-
-        const incomingMessageContainer =
-          createIncomingMessageContainer(decryptedMessage);
-        chatContainer.appendChild(incomingMessageContainer);
-      } else {
-        // Handle outgoing messages from the current user
-        const decryptedMessage = decryptMessage(message.cipher);
-        const outgoingMessageContainer =
-          createOutgoingMessageContainer(decryptedMessage);
-        chatContainer.appendChild(outgoingMessageContainer);
-      }
-    });
-    setTimeout(() => {
-      scrollToBottom();
-    }, 10); // Adjust the delay as needed
-  });
-</script>
-
-<!--  ALL FUNCTIONS -->
-<script>
-  function sendMessage() {
-    // Get the message value and chat container
-    const messageInput = document.getElementById('message-input');
-    const message = messageInput.value;
-    if (message) {
-      const senderEncryptedMessage = encryptMessage(publicKey, message);
-      const receiverEncryptedMessage = encryptMessage(
-        recipientPublicKey,
-        message
-      );
-      socket.emit('send_message', {
-        userReceiverId: userReceiverId,
-        senderEncryptedMessage: senderEncryptedMessage,
-        receiverEncryptedMessage: receiverEncryptedMessage,
-      });
-      messageInput.value = '';
-    }
-  }
-
-  // Function to update the sidebar with the new message
-  function updateSidebar(sender, receiver, message) {
-    if (sender == userId) {
-      const link = document.getElementById(`${receiver}`);
-      const span = document.getElementById(`span-${receiver}`);
-      const messageElement = document.getElementById(`message-${receiver}`);
-      // Update the text content of message
-      messageElement.textContent = message;
-      if (span) {
-        // Update the text content of span
-        span.innerHTML = 'You: ';
-      }
-      const chatUserContainer = document.getElementById('chat-user-container');
-      // Move the link as the first in chatUserContainer
-      chatUserContainer.prepend(link);
-    } else {
-      const link = document.getElementById(`${sender}`);
-      const span = document.getElementById(`span-${sender}`);
-      const messageElement = document.getElementById(`message-${sender}`);
-
-      // Update the text content of message
-      messageElement.textContent = message;
-
-      if (span) {
-        // Update the text content of span
-        span.innerHTML = '';
+      // saveUsername function
+      function saveUsername() {
+        console.log('USERNAME');
+        saveData(
+          'username-input',
+          "{{ url_for('chat_app_api.updateUserUsername') }}",
+          'username',
+          'username-error'
+        );
       }
 
-      const chatUserContainer = document.getElementById('chat-user-container');
-      // Move the link as the first in chatUserContainer
-      chatUserContainer.prepend(link);
-    }
-  }
+      function savePassword() {
+        const currentPassword = document.getElementById(
+          'current-password-input'
+        ).value;
+        const newPassword = document.getElementById('new-password-input').value;
+        const confirmPassword = document.getElementById(
+          'confirm-password-input'
+        ).value;
 
-  // Define a function to update the chat header
-  function updateChatHeader(username, image) {
-    const divElement = document.createElement('div');
-    divElement.classList.add(
-      'flex',
-      'items-center',
-      'bg-dark-2',
-      'p-6',
-      'text-gray-700',
-      'text-xl',
-      'font-bold',
-      'h-20',
-      'text-light-1'
-    );
+        // Create an object to map error types to HTML elements
+        const errorElementMap = {
+          password: document.getElementById('current-password-error'),
+          newPassword: document.getElementById('new-password-error'),
+          confirmPassword: document.getElementById('confirm-password-error'),
+        };
 
-    const centeringDiv = document.createElement('div');
-    centeringDiv.classList.add('flex', 'items-center', 'justify-center');
+        const apiUrl = "{{ url_for('chat_app_api.changePassword') }}";
+        fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+            confirmPassword: confirmPassword,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.result) {
+              notyf.success(data.result);
+              closeChangePasswordModal();
+            }
 
-    const imageElement = document.createElement('img');
-    imageElement.src = image; // Replace with the actual image URL
-    imageElement.alt = 'User Image';
-    imageElement.classList.add('w-12', 'h-12', 'rounded-full', 'mr-3');
+            if (data.errors) {
+              if (data.errors == 'Password change failed. Please try again') {
+                console.log('TRUE');
+                notyf.error(data.errors);
+                return;
+              }
 
-    const usernameSpan = document.createElement('span');
-    usernameSpan.textContent = username;
-    usernameSpan.classList.add('font-black', 'text-xl', 'text-light-1');
+              console.log(data.errors);
+              // Clear error errorss for types that no longer exist in the response
+              Object.keys(errorElementMap).forEach((type) => {
+                if (!data.errors.some((error) => error.type === type)) {
+                  const errorElement = errorElementMap[type];
+                  if (errorElement) {
+                    errorElement.classList.remove('mt-2');
+                    errorElement.innerText = '';
+                  }
+                }
+              });
 
-    centeringDiv.appendChild(imageElement);
-    centeringDiv.appendChild(usernameSpan);
-    divElement.appendChild(centeringDiv);
+              data.errors.forEach((error) => {
+                const errorElement = errorElementMap[error.type];
+                if (errorElement) {
+                  errorElement.classList.add('mt-2');
+                  errorElement.classList.remove('hidden');
+                  errorElement.innerText = error.message;
+                }
 
-    const existingHeader = document.querySelector('#username');
-    // Remove child of username and append the divElement
-    while (existingHeader.firstChild) {
-      existingHeader.removeChild(existingHeader.firstChild);
-    }
-    existingHeader.appendChild(divElement);
-  }
-
-  function renderAdditionalChatHistory(
-    chatHistory,
-    totalMessageCount,
-    renderedMessage
-  ) {
-    const chatContainer = document.getElementById('chat-container');
-    const showMoreButton = document.getElementById('show-more');
-    // Calculate the current scroll position before adding new messages
-    const currentScrollTop = chatContainer.scrollTop;
-    const previousScrollHeight = chatContainer.scrollHeight;
-
-    if (showMoreButton) {
-      chatContainer.removeChild(showMoreButton);
-    }
-
-    chatHistory.forEach(function (message) {
-      if (message.sender == userReceiverId) {
-        const decryptedMessage = decryptMessage(message.cipher);
-        const incomingMessageContainer =
-          createIncomingMessageContainer(decryptedMessage);
-        chatContainer.prepend(incomingMessageContainer);
-      } else {
-        const decryptedMessage = decryptMessage(message.cipher);
-        const outgoingMessageContainer =
-          createOutgoingMessageContainer(decryptedMessage);
-        chatContainer.prepend(outgoingMessageContainer);
+                // Check if there is only one error of type 'password-not-match'
+                if (
+                  data.errors.length === 1 &&
+                  data.errors[0].type === 'password-not-match'
+                ) {
+                  // Display the 'password-not-match' error using notyf.error
+                  notyf.error(data.errors[0].message);
+                }
+              });
+            } else {
+              // Clear all error messages if there are no message in the response
+              Object.values(errorElementMap).forEach((errorElement) => {
+                errorElement.classList.remove('mt-2');
+                errorElement.innerText = '';
+              });
+            }
+          });
       }
-    });
 
-    if (renderedMessage < totalMessageCount) {
-      const showMoreElement = document.createElement('div');
-      showMoreElement.classList.add(
-        'flex',
-        'justify-center',
-        'items-center',
-        'text-light-1',
-        'cursor-pointer',
-        'mb-4'
-      );
-      showMoreElement.id = 'show-more';
-      showMoreElement.textContent = 'Show More';
-      showMoreElement.addEventListener('click', () => {
-        loadMoreMessages(renderedMessage);
+      function closeFullnameModal() {
+        closeAndClearInput('fullnameModal', 'fullname-input', 'fullname-error');
+      }
+
+      function closeUsernameModal() {
+        closeAndClearInput('usernameModal', 'username-input', 'username-error');
+      }
+
+      function closeEmailModal() {
+        const modal = document.getElementById('emailModal');
+        modal.classList.add('hidden');
+      }
+
+      function closeChangePasswordModal() {
+        const modal = document.getElementById('changePasswordModal');
+        modal.classList.add('hidden');
+
+        // Get current-password-input
+        const currentPasswordInput = document.getElementById(
+          'current-password-input'
+        );
+        // Get new-password-input
+        const newPasswordInput = document.getElementById('new-password-input');
+        // Get confirm-password-input
+        const confirmPasswordInput = document.getElementById(
+          'confirm-password-input'
+        );
+        const currentPasswordError = document.getElementById(
+          'current-password-error'
+        );
+        const newPasswordError = document.getElementById('new-password-error');
+        const confirmPasswordError = document.getElementById(
+          'confirm-password-error'
+        );
+
+        // Clear inputs and errors
+        currentPasswordInput.value = '';
+        newPasswordInput.value = '';
+        confirmPasswordInput.value = '';
+
+        currentPasswordError.innerText = '';
+        newPasswordError.innerText = '';
+        confirmPasswordError.innerText = '';
+      }
+
+      function closeAndClearInput(modalId, inputId, errorId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.add('hidden');
+
+        // Clear input value
+        const input = document.getElementById(inputId);
+        input.value = '';
+
+        // Clear error message
+        const error = document.getElementById(errorId);
+        error.innerText = '';
+      }
+
+      // sayHello function
+      function sayHello() {
+        console.log('HELLO WORLD!');
+      }
+    </script>
+
+    <script>
+      // JavaScript to handle opening and closing the modal
+      const openModalButton = document.getElementById('open-modal');
+      const closeModalButton = document.getElementById('close-modal');
+      const modal = document.getElementById('modal');
+      const modalOverlay = document.querySelector('.modal-overlay');
+
+      function openNameModal() {
+        const fullnameModal = document.getElementById('fullnameModal');
+        fullnameModal.classList.remove('hidden');
+      }
+
+      function openUsernameModal() {
+        const usernameModal = document.getElementById('usernameModal');
+        usernameModal.classList.remove('hidden');
+      }
+
+      function openEmailModal() {
+        const emailModal = document.getElementById('emailModal');
+        emailModal.classList.remove('hidden');
+      }
+
+      function openChangePasswordModal() {
+        const changePasswordModal = document.getElementById(
+          'changePasswordModal'
+        );
+        changePasswordModal.classList.remove('hidden');
+        const menuDropdown = document.getElementById('menuDropdown');
+        menuDropdown.classList.add('hidden');
+      }
+
+      openModalButton.addEventListener('click', () => {
+        const menuDropdown = document.getElementById('menuDropdown');
+        modal.classList.remove('hidden');
+        menuDropdown.classList.add('hidden');
       });
 
-      // Insert the "Show More" button before the first child of chatContainer
-      chatContainer.insertBefore(showMoreElement, chatContainer.firstChild);
+      closeModalButton.addEventListener('click', () => {
+        modal.classList.add('hidden');
+      });
 
-      // Set the scroll position to maintain the previous view
-      const newScrollHeight = chatContainer.scrollHeight;
-      chatContainer.scrollTop =
-        currentScrollTop + (newScrollHeight - previousScrollHeight);
-    }
-  }
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+          modal.classList.add('hidden');
+        }
+      });
+    </script>
 
-  // Define a function to render the chat history
-  function renderChatHistory(chatHistory, totalMessageCount, renderedMessage) {
-    const chatContainer = document.getElementById('chat-container');
-    chatContainer.innerHTML = '';
+    <script
+      src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+      integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+      crossorigin="anonymous"
+    ></script>
 
-    // Add a show more element after a 500ms delay
-    setTimeout(function () {
-      if (renderedMessage !== totalMessageCount) {
-        console.log('NOT EQUAL SHOW MORE');
-        // Append element to chatContainer
-        const showMoreElement = document.createElement('div');
-        showMoreElement.classList.add(
-          'flex',
-          'justify-center',
-          'items-center',
-          'text-light-1',
-          'cursor-pointer',
-          'mb-4'
-        );
-        showMoreElement.id = 'show-more';
-        showMoreElement.textContent = 'Show More';
-        // Add a show more functions
-        showMoreElement.addEventListener('click', () => {
-          loadMoreMessages(renderedMessage);
+    <script>
+      // Function to open the sidebar
+      function openSidebar() {
+        const sidebar = document.getElementById('default-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('translate-x-0');
+        overlay.classList.remove('hidden');
+      }
+
+      // Function to close the sidebar
+      function closeSidebar() {
+        const sidebar = document.getElementById('default-sidebar');
+        // const overlay = document.getElementById('sidebar-overlay');
+
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('translate-x-full');
+        // overlay.classList.add('hidden');
+      }
+
+      // Add event listener to open the sidebar
+      document
+        .querySelector('[data-drawer-open="default-sidebar"]')
+        .addEventListener('click', openSidebar);
+
+      // Add event listener to close the sidebar
+      document
+        .querySelector('[data-drawer-close="default-sidebar"]')
+        .addEventListener('click', closeSidebar);
+    </script>
+
+    <!-- SCRIPTS -->
+    {% block script %} {% endblock script %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/0.10.0/forge.min.js"></script>
+
+    <!-- SEND MESSAGES TRIGGER ON ENTER -->
+    <script>
+      // Listen for Enter key press in the message input
+      document
+        .getElementById('message-input')
+        .addEventListener('keydown', function (event) {
+          if (event.key === 'Enter') {
+            sendMessage(); // Trigger the send button's click event
+          }
         });
-        chatContainer.prepend(showMoreElement);
+
+      // Get the chat messages container
+      const chatMessages = document.querySelector('.message-bottom');
+
+      // Scroll to the end of the chat messages
+      function scrollToBottom() {
+        const chatMessages = document.getElementById('chat-container');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
       }
-    }, 1);
 
-    chatHistory.forEach(function (message) {
-      if (message.sender == userReceiverId) {
-        // Handle outgoing messages from the current user
-        const decryptedMessage = decryptMessage(message.cipher);
-
-        const incomingMessageContainer =
-          createIncomingMessageContainer(decryptedMessage);
-        chatContainer.appendChild(incomingMessageContainer);
-      } else {
-        // Handle outgoing messages from the current user
-        const decryptedMessage = decryptMessage(message.cipher);
-        const outgoingMessageContainer =
-          createOutgoingMessageContainer(decryptedMessage);
-        chatContainer.appendChild(outgoingMessageContainer);
-      }
-    });
-
-    setTimeout(() => {
       scrollToBottom();
-    }, 10);
-  }
+    </script>
 
-  function loadMoreMessages(renderedMessage) {
-    console.log('LOADING MESSAGES');
-    socket.emit('load_more_message', {
-      chat_user_id: userReceiverId,
-      rendered_message: renderedMessage,
-    });
-  }
-</script>
+    <!-- Menu button dropdown (Header) -->
+    <script>
+      const menuButton = document.getElementById('menuButton');
+      const menuDropdown = document.getElementById('menuDropdown');
 
-<!-- OUTGOING AND INCOMING MESSAGE CONTAINER -->
-<script>
-  // Function to create an outgoing message container
-  function createOutgoingMessageContainer(messageText) {
-    const messageContainer = document.createElement('div');
-    messageContainer.classList.add(
-      'flex',
-      'justify-end',
-      'mb-4',
-      'cursor-pointer'
-    );
+      menuButton.addEventListener('click', () => {
+        if (menuDropdown.classList.contains('hidden')) {
+          menuDropdown.classList.remove('hidden');
+        } else {
+          menuDropdown.classList.add('hidden');
+        }
+      });
 
-    const messageContent = document.createElement('div');
-    messageContent.classList.add(
-      'flex',
-      'max-w-96',
-      'bg-indigo-500',
-      'text-white',
-      'rounded-lg',
-      'p-3',
-      'gap-3'
-    );
+      // Close the menu if you click outside of it
+      document.addEventListener('click', (e) => {
+        if (
+          !menuDropdown.contains(e.target) &&
+          !menuButton.contains(e.target)
+        ) {
+          menuDropdown.classList.add('hidden');
+        }
+      });
+    </script>
 
-    const messageTextElement = document.createElement('p');
-    messageTextElement.innerText = messageText;
+    <!-- SEARCH FUNCTIONS FETCH -->
+    <script>
+      // Get the search input and search results container
+      const searchInput = document.getElementById('searchInput');
+      const searchResultsDropdown = document.querySelector(
+        '.search-results-dropdown'
+      );
+      // Construct the base URL with the '/api/v1' prefix
+      const baseUrl = "{{ url_for('chat_app_api.searchUsers') }}";
 
-    messageContent.appendChild(messageTextElement);
+      // Function to make a request to the server with the user's input
+      function searchUsers(query) {
+        // Combine the base URL with the query parameter
+        const apiUrl = baseUrl + `?query=${query}`;
+        fetch(apiUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            // Clear previous search results
+            searchResultsDropdown.innerHTML = '';
 
-    const avatarContainer = document.createElement('div');
-    avatarContainer.classList.add(
-      'w-16',
-      'h-9',
-      'rounded-full',
-      'flex',
-      'items-center',
-      'justify-center',
-      'ml-2'
-    );
+            if (data.result) {
+              // Loop through the search results and render them
+              data.result.forEach((result) => {
+                const resultElement = document.createElement('button');
 
-    const avatarImage = document.createElement('img');
-    avatarImage.src =
-      'https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
-    avatarImage.alt = 'Avatar';
-    avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+                // resultElement.href = `/api/v1/${result.username}`;
+                resultElement.onclick = function () {
+                  fetchChatDetails(result.id, result.username);
+                };
+                resultElement.className =
+                  'bg-dark-3 w-full px-4 py-2 flex gap-4 border-b border-gray-800';
 
-    avatarContainer.appendChild(avatarImage);
+                // Create and append the child elements with your specified structure
+                const imgElement = document.createElement('img');
+                imgElement.src =
+                  'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+                imgElement.alt = 'User Avatar';
+                imgElement.className = 'w-12 h-12 rounded-full';
 
-    messageContainer.appendChild(messageContent);
-    messageContainer.appendChild(avatarContainer);
+                const userTextElement = document.createElement('div');
 
-    return messageContainer;
-  }
+                const userNameElement = document.createElement('h2');
+                userNameElement.className = 'text-lg text-light-1 font-inter';
+                userNameElement.textContent = `@${result.username}`;
 
-  // Function to create an incoming message container
-  function createIncomingMessageContainer(messageText) {
-    const incomingMessageContainer = document.createElement('div');
-    incomingMessageContainer.classList.add('flex', 'mb-4', 'cursor-pointer');
+                const userDescriptionElement = document.createElement('p');
+                userDescriptionElement.className =
+                  'text-light-2 text-sm line-clamp-1';
+                userDescriptionElement.textContent = 'Hoorayy!!';
 
-    const avatarContainer = document.createElement('div');
-    avatarContainer.classList.add(
-      'w-16',
-      'h-9',
-      'rounded-full',
-      'flex',
-      'items-center',
-      'justify-center',
-      'mr-2'
-    );
+                // Append child elements to resultElement
+                userTextElement.appendChild(userNameElement);
+                userTextElement.appendChild(userDescriptionElement);
 
-    const avatarImage = document.createElement('img');
-    avatarImage.src =
-      'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
-    avatarImage.alt = 'User Avatar';
-    avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+                resultElement.appendChild(imgElement);
+                resultElement.appendChild(userTextElement);
 
-    avatarContainer.appendChild(avatarImage);
+                // Append the resultElement to searchResultsDropdown
+                searchResultsDropdown.appendChild(resultElement);
+              });
+            } else {
+              // Create a message element for no results
+              const noResultsMessage = document.createElement('div');
+              noResultsMessage.className =
+                'bg-dark-3 w-full px-4 py-4 flex gap-4';
+              noResultsMessage.textContent = 'No Users Found';
 
-    const messageContent = document.createElement('div');
-    messageContent.classList.add(
-      'flex',
-      'max-w-96',
-      'bg-dark-4',
-      'rounded-lg',
-      'p-3',
-      'gap-3'
-    );
+              // Append the message to searchResultsDropdown
+              searchResultsDropdown.appendChild(noResultsMessage);
+            }
 
-    const messageTextElement = document.createElement('p');
-    messageTextElement.innerText = messageText;
-    messageTextElement.classList.add('text-light-1');
+            // Show the search results container
+            searchResultsDropdown.classList.remove('hidden');
+          })
+          .catch((error) => {});
+      }
 
-    messageContent.appendChild(messageTextElement);
+      function fetchChatDetails(id, username) {
+        searchResultsDropdown.classList.add('hidden');
+        // Send the message and reciever username
+        userReceiverId = id;
+        socket.emit('chat_history', {
+          chat_user_id: userReceiverId,
+          chat_username: username,
+        });
+      }
 
-    incomingMessageContainer.appendChild(avatarContainer);
-    incomingMessageContainer.appendChild(messageContent);
+      // Handle input events in the search input (for real-time search)
+      searchInput.addEventListener('input', (event) => {
+        const query = searchInput.value.trim();
 
-    return incomingMessageContainer;
-  }
-</script>
+        if (query.length > 0) {
+          searchUsers(query);
+        } else {
+          // If the search input is empty, hide the search results
+          searchResultsDropdown.innerHTML = '';
+          searchResultsDropdown.classList.add('hidden');
+        }
+      });
 
-<!-- PUBLIC KEY RELATED AND ENCRYPTION DECRYPTION FUNCTION -->
-<script>
-  let publicKey;
-  let privateKey;
-  let recipientPublicKey;
-  let renderedMessage;
-  let userReceiverId;
+      // Close the search results when clicking outside the search input and results container
+      document.addEventListener('click', (e) => {
+        if (
+          !searchInput.contains(e.target) &&
+          !searchResultsDropdown.contains(e.target)
+        ) {
+          searchResultsDropdown.innerHTML = '';
+          searchResultsDropdown.classList.add('hidden');
+        }
+      });
 
-  // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
-  let publicKeyStr = document.getElementById('publicKey').value;
-  let privateKeyStr = document.getElementById('privateKey').value;
-  let userId = document.getElementById('userId').value;
+      // Function to handle the focus event on the search input
+      searchInput.addEventListener('focus', (event) => {
+        // Check if the input is not empty and trigger the search again
+        const query = searchInput.value.trim();
 
-  ForgeKeys();
-  function ForgeKeys() {
-    publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
-    privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
-  }
+        if (query.length > 0) {
+          searchUsers(query);
+        }
+      });
+    </script>
 
-  function encryptMessage(key, message) {
-    const encryptedMessage = key.encrypt(forge.util.encodeUtf8(message));
-    const base64EncryptedMessage = forge.util.encode64(encryptedMessage);
-    return base64EncryptedMessage;
-  }
+    <!-- SOCKETIO -->
+    <script>
+      const socket = io();
 
-  function decryptMessage(message) {
-    const encryptedMessage = forge.util.decode64(message);
-    if (encryptMessage) {
-      const decryptedMessage = privateKey.decrypt(encryptedMessage);
-      return decryptedMessage;
-    } else {
-      console.log('SOMETHING WENT WRONG IN DECRYPTING');
-    }
-  }
-</script>
+      // I want to get the connect data here
+      socket.on('connect', () => {});
 
-{% endblock script %}
+      const chatContainer = document.getElementById('chat-container');
+
+      // INTERACTING WITH MESSAGES IN SOCKET
+      socket.on('message', function (data) {
+        const chatContainer = document.getElementById('chat-container');
+        if (data.sender == userId) {
+          // Handle outgoing messages from the current user
+          const decryptedMessage = decryptMessage(data.senderCipher);
+          const outgoingMessageContainer =
+            createOutgoingMessageContainer(decryptedMessage);
+          chatContainer.appendChild(outgoingMessageContainer);
+          if (data.new_message) {
+            console.log('USER NEW MESSAGE');
+            const spanUsername = document.getElementById('span-username');
+            const usernameText = spanUsername.textContent;
+
+            const message = decryptedMessage;
+
+            const chatUserContainer = document.getElementById(
+              'chat-user-container'
+            );
+
+            const chat = {
+              sender_id: data.sender,
+              username: usernameText,
+              chat_user_photo: chatUserPhoto,
+              id: userReceiverId,
+              message: data.senderCipher,
+              active: true,
+            };
+            console.log('CHAT: ', chat);
+            const chatUserElement = createChatUserElement(chat);
+            chatUserContainer.appendChild(chatUserElement);
+          } else {
+            updateSidebar(userId, data.receiver, decryptedMessage);
+          }
+        } else if (data.sender == userReceiverId) {
+          // Handle outgoing messages from the current user
+          const decryptedMessage = decryptMessage(data.receiverCipher);
+          const incomingMessageContainer =
+            createIncomingMessageContainer(decryptedMessage);
+          chatContainer.appendChild(incomingMessageContainer);
+          updateSidebar(data.sender, data.receiver, decryptedMessage);
+          if (data.new_message) {
+            console.log('RECEIVE NEW MESSAGE BUT RECEIVER ID');
+          }
+          // if (data.new_message) {
+          // } else {
+          //   updateSidebar(data.sender, data.receiver, decryptedMessage);
+          // }
+        } else {
+          // Handle outgoing messages from the current user
+          const decryptedMessage = decryptMessage(data.receiverCipher);
+          // chatContainer.appendChild(incomingMessageContainer);
+          if (data.new_message) {
+            console.log('RECEIVE NEW MESSAGE');
+            // Emit the user to join in room
+            socket.emit('join_room', {
+              chat_user_id: data.sender,
+            });
+
+            const chat = {
+              sender_id: data.sender,
+              username: data.username,
+              chat_user_photo: data.chat_user_photo,
+              id: data.sender,
+              message: data.receiverCipher,
+              active: false,
+            };
+            // console.log('DECRYPTED MESSAGE: ', decryptMessage(chat.message));
+            const chatUserContainer = document.getElementById(
+              'chat-user-container'
+            );
+            const chatUserElement = createChatUserElement(chat);
+            chatUserContainer.prepend(chatUserElement);
+          } else {
+            updateSidebar(data.sender, data.receiver, decryptedMessage);
+          }
+        }
+
+        scrollToBottom();
+      });
+
+      // CHAT USER SIDE BAR
+      socket.on('chat_details', (data) => {
+        // Get name-display
+        const fullnameModalElement =
+          document.getElementById('fullname-display');
+        // Get username-display
+        const usernameModalElement =
+          document.getElementById('username-display');
+        // Get email-display
+        const emailModalElement = document.getElementById('email-display');
+        // Get change-modal-fullname
+        const changeModalFullnameElement = document.getElementById(
+          'change-modal-fullname'
+        );
+
+        const changeModalUsernameElement = document.getElementById(
+          'change-modal-username'
+        );
+        const changeModalEmailElement =
+          document.getElementById('change-modal-email');
+
+        // Update the display element using data.name, data.username, data.email
+        fullnameModalElement.textContent = data.name;
+        changeModalFullnameElement.textContent = data.name;
+        usernameModalElement.textContent = data.username;
+        changeModalUsernameElement.textContent = data.username;
+        emailModalElement.textContent = data.email;
+        changeModalEmailElement.textContent = data.email;
+
+        const chatUserContainer = document.getElementById(
+          'chat-user-container'
+        ); // Replace 'chat-user-container' with the ID of your container element
+
+        // Remove any existing chat user links
+        while (chatUserContainer.firstChild) {
+          chatUserContainer.removeChild(chatUserContainer.firstChild);
+        }
+
+        // Usage:
+        data.chat_user.forEach((chat) => {
+          const chatUserElement = createChatUserElement(chat);
+          chatUserContainer.appendChild(chatUserElement);
+        });
+      });
+
+      // LOAD MORE MESSAGES (SHOW MORE)
+      socket.on('load_messages', function (data) {
+        renderedMessage = data.render_message_count;
+        renderAdditionalChatHistory(
+          data.chat_history,
+          data.total_message_count,
+          renderedMessage
+        );
+        const chatContainer = document.getElementById('chat-container');
+
+        // Define an asynchronous function to decrypt a message
+        async function decryptAndAppendMessage(cipher, createMessageContainer) {
+          if (cipher) {
+            try {
+              const decryptedMessage = await decryptMessage(cipher);
+              const messageContainer = createMessageContainer(decryptedMessage);
+              chatContainer.prepend(messageContainer);
+            } catch (error) {}
+          }
+        }
+
+        data.chat_history.forEach(function (message) {
+          if (message.sender == userId) {
+            // Handle outgoing messages from the current user
+            decryptAndAppendMessage(
+              message.senderCipher,
+              createOutgoingMessageContainer
+            );
+          } else if (message.sender == userReceiverId) {
+            // Handle incoming messages from the current user
+            decryptAndAppendMessage(
+              message.receiverCipher,
+              createIncomingMessageContainer
+            );
+          }
+        });
+      });
+
+      // CHAT HISTORY TO SPECIFIC USER
+      socket.on('detailed_chat_user_info', (data) => {
+        const chatUserContainer = document.getElementById(
+          'chat-user-container'
+        );
+
+        recipientPublicKey = forge.pki.publicKeyFromPem(
+          data.current_chat_public_key
+        );
+
+        const chatContainer = document.getElementById('chat-container');
+        const noChat = document.getElementById('no-chat');
+        const chat = document.getElementById('chat');
+        const sendMessageContainer = document.getElementById(
+          'send-message-container'
+        );
+
+        noChat.classList.add('hidden');
+        sendMessageContainer.classList.remove('hidden');
+        chatContainer.classList.remove('hidden');
+        chat.classList.remove('hidden');
+
+        chatContainer.innerHTML = ''; // Clear existing chat history
+        renderedMessage = data.render_message_count;
+        chatUserPhoto = data.chat_user_photo;
+
+        if (data.chat_history == false) {
+          updateChatHeader(data.current_chat_username, chatUserPhoto);
+
+          return;
+        }
+        // Remove the 'bg-active' class from all elements that have it
+        const elementsWithBgActive = document.querySelectorAll('.bg-active');
+        for (const element of elementsWithBgActive) {
+          element.classList.remove('bg-active');
+        }
+
+        // Add the 'bg-active' class to the chat user element with the specified 'userReceiverId'
+        const chatUserElement = document.getElementById(userReceiverId);
+        if (chatUserElement) {
+          chatUserElement.classList.add('bg-active');
+        }
+
+        if (data.chat_history) {
+          updateChatHeader(data.current_chat_username, data.chat_user_photo);
+          renderChatHistory(
+            data.chat_history,
+            data.total_message_count,
+            renderedMessage
+          );
+        }
+
+        // data.chat_history.forEach(function (message) {
+        //   if (message.sender == userReceiverId) {
+        //     // Handle outgoing messages from the current user
+        //     const decryptedMessage = decryptMessage(message.cipher);
+
+        //     const incomingMessageContainer =
+        //       createIncomingMessageContainer(decryptedMessage);
+        //     chatContainer.appendChild(incomingMessageContainer);
+        //   } else {
+        //     // Handle outgoing messages from the current user
+        //     const decryptedMessage = decryptMessage(message.cipher);
+        //     const outgoingMessageContainer =
+        //       createOutgoingMessageContainer(decryptedMessage);
+        //     chatContainer.appendChild(outgoingMessageContainer);
+        //   }
+        // });
+        setTimeout(() => {
+          scrollToBottom();
+        }, 10); // Adjust the delay as needed
+      });
+    </script>
+
+    <!--  ALL FUNCTIONS -->
+    <script>
+      function createChatUserElement(chat) {
+        const chatUserElement = document.createElement('button');
+        chatUserElement.id = chat.id;
+        // chatUserElement.href = `/chat/${chat.id}`;
+        chatUserElement.onclick = function () {
+          fetchChatDetails(chat.id, chat.username);
+        };
+
+        chatUserElement.classList.add(
+          'flex',
+          'items-center',
+          'cursor-pointer',
+          'hover:bg-dark-3',
+          'p-4',
+          'w-full',
+          chat.active && 'bg-active'
+        );
+
+        const avatarDiv = document.createElement('div');
+        avatarDiv.classList.add(
+          'w-12',
+          'h-12',
+          'bg-gray-300',
+          'rounded-full',
+          'mr-3'
+        );
+
+        const avatarImg = document.createElement('img');
+        avatarImg.src = chat.chat_user_photo;
+        avatarImg.alt = 'User Avatar';
+        avatarImg.classList.add('w-12', 'h-12', 'rounded-full');
+
+        avatarDiv.appendChild(avatarImg);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.classList.add('flex-1');
+
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('flex');
+
+        const usernameH2 = document.createElement('h2');
+        usernameH2.classList.add(
+          'text-lg',
+          'text-light-1',
+          'font-inter',
+          'text-left'
+        );
+        usernameH2.textContent = chat.username;
+
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('flex', 'gap-2', 'items-center');
+
+        const span = document.createElement('span');
+        span.id = `span-${chat.id}`;
+        span.classList.add('font-black', 'text-sm', 'text-light-2');
+        if (userId == chat.sender_id) {
+          span.innerHTML = 'You:&nbsp;';
+        }
+
+        messageDiv.appendChild(span);
+        const messageP = document.createElement('p');
+        messageP.classList.add('text-light-2', 'text-sm', 'line-clamp-1');
+        messageP.id = `message-${chat.id}`;
+        messageP.textContent = decryptMessage(chat.message);
+
+        messageDiv.appendChild(messageP);
+
+        contentDiv.appendChild(usernameH2);
+        contentDiv.appendChild(messageDiv);
+        chatUserElement.appendChild(avatarDiv);
+        chatUserElement.appendChild(contentDiv);
+
+        return chatUserElement;
+      }
+
+      function sendMessage() {
+        // Get the message value and chat container
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value;
+        if (message) {
+          const senderEncryptedMessage = encryptMessage(publicKey, message);
+          const receiverEncryptedMessage = encryptMessage(
+            recipientPublicKey,
+            message
+          );
+
+          socket.emit('send_message', {
+            userReceiverId: userReceiverId,
+            senderEncryptedMessage: senderEncryptedMessage,
+            receiverEncryptedMessage: receiverEncryptedMessage,
+          });
+          messageInput.value = '';
+        }
+      }
+
+      // Function to update the sidebar with the new message
+      function updateSidebar(sender, receiver, message) {
+        if (sender == userId) {
+          const link = document.getElementById(`${receiver}`);
+          const span = document.getElementById(`span-${receiver}`);
+          const messageElement = document.getElementById(`message-${receiver}`);
+
+          // Update the text content of message
+          messageElement.textContent = message;
+          if (span) {
+            // Update the text content of span
+            span.innerHTML = 'You:&nbsp;';
+          }
+
+          const chatUserContainer = document.getElementById(
+            'chat-user-container'
+          );
+          // Move the link as the first in chatUserContainer
+          chatUserContainer.prepend(link);
+        } else {
+          const link = document.getElementById(`${sender}`);
+          const span = document.getElementById(`span-${sender}`);
+          const messageElement = document.getElementById(`message-${sender}`);
+
+          // Update the text content of message
+          messageElement.textContent = message;
+
+          if (span) {
+            // Update the text content of span
+            span.innerHTML = '';
+          }
+
+          const chatUserContainer = document.getElementById(
+            'chat-user-container'
+          );
+          // Move the link as the first in chatUserContainer
+          chatUserContainer.prepend(link);
+        }
+      }
+
+      // Define a function to update the chat header
+      function updateChatHeader(username, image) {
+        const divElement = document.createElement('div');
+        divElement.classList.add(
+          'flex',
+          'items-center',
+          'bg-dark-2',
+          'p-6',
+          'text-gray-700',
+          'text-xl',
+          'font-bold',
+          'h-20',
+          'text-light-1'
+        );
+
+        const centeringDiv = document.createElement('div');
+        centeringDiv.classList.add('flex', 'items-center', 'justify-center');
+
+        const imageElement = document.createElement('img');
+        imageElement.src = image; // Replace with the actual image URL
+        imageElement.alt = 'User Image';
+        imageElement.classList.add('w-12', 'h-12', 'rounded-full', 'mr-3');
+
+        const usernameSpan = document.createElement('span');
+        usernameSpan.id = 'span-username';
+        usernameSpan.textContent = username;
+        usernameSpan.classList.add('font-black', 'text-xl', 'text-light-1');
+
+        centeringDiv.appendChild(imageElement);
+        centeringDiv.appendChild(usernameSpan);
+        divElement.appendChild(centeringDiv);
+
+        const existingHeader = document.querySelector('#username');
+        // Remove child of username and append the divElement
+        while (existingHeader.firstChild) {
+          existingHeader.removeChild(existingHeader.firstChild);
+        }
+        existingHeader.appendChild(divElement);
+      }
+
+      function renderAdditionalChatHistory(
+        chatHistory,
+        totalMessageCount,
+        renderedMessage
+      ) {
+        const chatContainer = document.getElementById('chat-container');
+        const showMoreButton = document.getElementById('show-more');
+        // Calculate the current scroll position before adding new messages
+        const currentScrollTop = chatContainer.scrollTop;
+        const previousScrollHeight = chatContainer.scrollHeight;
+
+        if (showMoreButton) {
+          chatContainer.removeChild(showMoreButton);
+        }
+
+        chatHistory.forEach(function (message) {
+          if (message.sender == userReceiverId) {
+            const decryptedMessage = decryptMessage(message.cipher);
+            const incomingMessageContainer =
+              createIncomingMessageContainer(decryptedMessage);
+            chatContainer.prepend(incomingMessageContainer);
+          } else {
+            const decryptedMessage = decryptMessage(message.cipher);
+            const outgoingMessageContainer =
+              createOutgoingMessageContainer(decryptedMessage);
+            chatContainer.prepend(outgoingMessageContainer);
+          }
+        });
+
+        if (renderedMessage < totalMessageCount) {
+          const showMoreElement = document.createElement('div');
+          showMoreElement.classList.add(
+            'flex',
+            'justify-center',
+            'items-center',
+            'text-light-1',
+            'cursor-pointer',
+            'mb-4'
+          );
+          showMoreElement.id = 'show-more';
+          showMoreElement.textContent = 'Show More';
+          showMoreElement.addEventListener('click', () => {
+            loadMoreMessages(renderedMessage);
+          });
+
+          // Insert the "Show More" button before the first child of chatContainer
+          chatContainer.insertBefore(showMoreElement, chatContainer.firstChild);
+
+          // Set the scroll position to maintain the previous view
+          const newScrollHeight = chatContainer.scrollHeight;
+          chatContainer.scrollTop =
+            currentScrollTop + (newScrollHeight - previousScrollHeight);
+        }
+      }
+
+      // Define a function to render the chat history
+      function renderChatHistory(
+        chatHistory,
+        totalMessageCount,
+        renderedMessage
+      ) {
+        const chatContainer = document.getElementById('chat-container');
+        chatContainer.innerHTML = '';
+
+        // Add a show more element after a 500ms delay
+        setTimeout(function () {
+          if (renderedMessage !== totalMessageCount) {
+            // Append element to chatContainer
+            const showMoreElement = document.createElement('div');
+            showMoreElement.classList.add(
+              'flex',
+              'justify-center',
+              'items-center',
+              'text-light-1',
+              'cursor-pointer',
+              'mb-4'
+            );
+            showMoreElement.id = 'show-more';
+            showMoreElement.textContent = 'Show More';
+            // Add a show more functions
+            showMoreElement.addEventListener('click', () => {
+              loadMoreMessages(renderedMessage);
+            });
+            chatContainer.prepend(showMoreElement);
+          }
+        }, 1);
+
+        chatHistory.forEach(function (message) {
+          if (message.sender == userReceiverId) {
+            // Handle outgoing messages from the current user
+            const decryptedMessage = decryptMessage(message.cipher);
+
+            const incomingMessageContainer =
+              createIncomingMessageContainer(decryptedMessage);
+            chatContainer.appendChild(incomingMessageContainer);
+          } else {
+            // Handle outgoing messages from the current user
+            const decryptedMessage = decryptMessage(message.cipher);
+            const outgoingMessageContainer =
+              createOutgoingMessageContainer(decryptedMessage);
+            chatContainer.appendChild(outgoingMessageContainer);
+          }
+        });
+
+        setTimeout(() => {
+          scrollToBottom();
+        }, 10);
+      }
+
+      function loadMoreMessages(renderedMessage) {
+        socket.emit('load_more_message', {
+          chat_user_id: userReceiverId,
+          rendered_message: renderedMessage,
+        });
+      }
+    </script>
+
+    <!-- OUTGOING AND INCOMING MESSAGE CONTAINER -->
+    <script>
+      // Function to create an outgoing message container
+      function createOutgoingMessageContainer(messageText) {
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add(
+          'flex',
+          'justify-end',
+          'mb-4',
+          'cursor-pointer'
+        );
+
+        const messageContent = document.createElement('div');
+        messageContent.classList.add(
+          'flex',
+          'max-w-96',
+          'bg-indigo-500',
+          'text-white',
+          'rounded-lg',
+          'p-3',
+          'gap-3'
+        );
+
+        const messageTextElement = document.createElement('p');
+        messageTextElement.innerText = messageText;
+
+        messageContent.appendChild(messageTextElement);
+
+        const avatarContainer = document.createElement('div');
+        avatarContainer.classList.add(
+          'w-16',
+          'h-9',
+          'rounded-full',
+          'flex',
+          'items-center',
+          'justify-center',
+          'ml-2'
+        );
+
+        const avatarImage = document.createElement('img');
+        avatarImage.src =
+          'https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+        avatarImage.alt = 'Avatar';
+        avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+
+        avatarContainer.appendChild(avatarImage);
+
+        messageContainer.appendChild(messageContent);
+        messageContainer.appendChild(avatarContainer);
+
+        return messageContainer;
+      }
+
+      // Function to create an incoming message container
+      function createIncomingMessageContainer(messageText) {
+        const incomingMessageContainer = document.createElement('div');
+        incomingMessageContainer.classList.add(
+          'flex',
+          'mb-4',
+          'cursor-pointer'
+        );
+
+        const avatarContainer = document.createElement('div');
+        avatarContainer.classList.add(
+          'w-16',
+          'h-9',
+          'rounded-full',
+          'flex',
+          'items-center',
+          'justify-center',
+          'mr-2'
+        );
+
+        const avatarImage = document.createElement('img');
+        avatarImage.src =
+          'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato';
+        avatarImage.alt = 'User Avatar';
+        avatarImage.classList.add('w-8', 'h-8', 'rounded-full');
+
+        avatarContainer.appendChild(avatarImage);
+
+        const messageContent = document.createElement('div');
+        messageContent.classList.add(
+          'flex',
+          'max-w-96',
+          'bg-dark-4',
+          'rounded-lg',
+          'p-3',
+          'gap-3'
+        );
+
+        const messageTextElement = document.createElement('p');
+        messageTextElement.innerText = messageText;
+        messageTextElement.classList.add('text-light-1');
+
+        messageContent.appendChild(messageTextElement);
+
+        incomingMessageContainer.appendChild(avatarContainer);
+        incomingMessageContainer.appendChild(messageContent);
+
+        return incomingMessageContainer;
+      }
+    </script>
+
+    <!-- PUBLIC KEY RELATED AND ENCRYPTION DECRYPTION FUNCTION -->
+    <script>
+      let publicKey;
+      let privateKey;
+      let recipientPublicKey;
+      let renderedMessage;
+      let userReceiverId = 0;
+      let chatUserPhoto;
+
+      // Retrieve the keys from the hidden input fields and parse them as Forge.js key objects
+      let publicKeyStr = document.getElementById('publicKey').value;
+      let privateKeyStr = document.getElementById('privateKey').value;
+      let userId = document.getElementById('userId').value;
+
+      ForgeKeys();
+      function ForgeKeys() {
+        publicKey = forge.pki.publicKeyFromPem(publicKeyStr); // Assign publicKey here
+        privateKey = forge.pki.privateKeyFromPem(privateKeyStr);
+      }
+
+      function encryptMessage(key, message) {
+        const encryptedMessage = key.encrypt(forge.util.encodeUtf8(message));
+        const base64EncryptedMessage = forge.util.encode64(encryptedMessage);
+        return base64EncryptedMessage;
+      }
+
+      function decryptMessage(message) {
+        const encryptedMessage = forge.util.decode64(message);
+        if (encryptMessage) {
+          const decryptedMessage = privateKey.decrypt(encryptedMessage);
+          return decryptedMessage;
+        } else {
+        }
+      }
+    </script>
+  </body>
+</html>

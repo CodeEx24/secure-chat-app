@@ -6,6 +6,7 @@ from data.user import user_data
 from data.chatted_user import chatted_user_data
 from data.question import question_data
 
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -21,6 +22,14 @@ class User(db.Model):
     key= db.Column(db.String, nullable=False)
     token = db.Column(db.String(128))  # This field will store the reset token
     token_expiration = db.Column(db.DateTime)
+    # created_at = db.Column(db.DateTime, default=datetime.now)
+    # updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+    def to_dict(self):
+        return {
+            'Name': self.name,
+            'Username': self.username,
+            'Email': self.email,
+        }
 
 class Messages(db.Model):
     __tablename__ = 'Messages'
@@ -30,6 +39,8 @@ class Messages(db.Model):
     timestamp = db.Column(db.DateTime)
     sender_ciphertext = db.Column(db.String, nullable=False)
     receiver_ciphertext = db.Column(db.String, nullable=False)
+    # created_at = db.Column(db.DateTime, default=datetime.now)
+    # updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
         
 class ChattedUser(db.Model):
     __tablename__ = 'ChattedUser'
@@ -37,6 +48,8 @@ class ChattedUser(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
+    # created_at = db.Column(db.DateTime, default=datetime.now)
+    # updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
 
 class UserKey(db.Model):
@@ -45,6 +58,8 @@ class UserKey(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False)
     private_key = db.Column(db.String, nullable=False)
+    # created_at = db.Column(db.DateTime, default=datetime.now)
+    # updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
 # # * REQUIRED FOR USERS
 class SecurityQuestion(db.Model):
@@ -54,6 +69,8 @@ class SecurityQuestion(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('Users.id', ondelete="CASCADE"), nullable=False, unique=True)
     question_id = db.Column(db.Integer, db.ForeignKey('Questions.id', ondelete="CASCADE"), nullable=False)
     answer = db.Column(db.String(255), nullable=False)
+    # created_at = db.Column(db.DateTime, default=datetime.now)
+    # updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
     
 # * REQUIRED FOR USERS
@@ -62,6 +79,8 @@ class Question(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     question = db.Column(db.String(255), nullable=False)
+    # created_at = db.Column(db.DateTime, default=datetime.now)
+    # updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
 # # * REQUIRED FOR USERS
 # class Question(db.Model):
@@ -93,15 +112,15 @@ def init_db(app):
             create_sample_data()
             
 def create_sample_data():
-    for data in user_data:
-        user = User(**data)
-        db.session.add(user)
-        db.session.flush()
+#     for data in user_data:
+#         user = User(**data)
+#         db.session.add(user)
+#         db.session.flush()
         
-    for chatted in chatted_user_data:
-        chatted_user = ChattedUser(**chatted)
-        db.session.add(chatted_user)
-        db.session.flush()
+#     for chatted in chatted_user_data:
+#         chatted_user = ChattedUser(**chatted)
+#         db.session.add(chatted_user)
+#         db.session.flush()
         
     for question in question_data:
         question = Question(**question)

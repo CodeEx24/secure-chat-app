@@ -5,7 +5,7 @@ from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 
-from models import init_db
+from models import init_db, User
 # from flask_jwt_extended import JWTManager
 
 from decorators.auth_decorators import preventAuthenticated, userRequired
@@ -35,7 +35,7 @@ def create_app():
     app.config['MAIL_USE_TLS'] = False
     app.config['MAIL_USE_SSL'] = True
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URI")
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['TEMPLATES_AUTO_RELOAD'] = True 
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
@@ -91,7 +91,8 @@ def create_app():
         private_key=session['private_key']
         public_key=session['public_key']
         user_id = session['user_id']
-        return render_template('pages/home.html', private_key=private_key, public_key=public_key, user_id=user_id)
+        user = User.query.filter_by(id=user_id).first()
+        return render_template('pages/home.html', private_key=private_key, public_key=public_key, user_id=user_id, user=user.to_dict())
     
     @app.route('/home3')
     @userRequired
@@ -106,12 +107,12 @@ def create_app():
     def practice():
         private_key=session['private_key']
         public_key=session['public_key']
+        
         return render_template('pages/practice.html', private_key=private_key, public_key=public_key)
     
     @app.route('/practice2')
     @userRequired
     def practice2():
-        
         return render_template('pages/practice2.html')
         
         
